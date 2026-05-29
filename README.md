@@ -46,7 +46,11 @@ Create a PostgreSQL database named `sudhadentaldb`. The Spring Boot app is confi
 ### 2. Run Backend API
 ```bash
 cd backend
-mvn spring-boot:run
+# On Windows:
+.\mvnw spring-boot:run
+
+# On Git Bash / Linux / macOS:
+./mvnw spring-boot:run
 ```
 The server will start listening on [http://localhost:8081](http://localhost:8081).
 
