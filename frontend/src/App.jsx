@@ -10,9 +10,9 @@ import { LayoutDashboard, BookOpen, Layers, CreditCard, Stethoscope, Users, Cale
 import { api } from './api';
 
 const ROLES = [
-  { id: 'ADMIN', label: 'Admin (Clinic Owner)', desc: 'Full system control' },
-  { id: 'DENTIST', label: 'Dentist', desc: 'EMR, Prescribing & Calendar' },
-  { id: 'RECEPTIONIST', label: 'Receptionist', desc: 'Bookings, Onboarding & Billing' }
+  { id: 'ADMIN', label: 'Dr. Sudha (Clinic Director)', desc: 'Full control' },
+  { id: 'DENTIST', label: 'Dr. Sarah Jenkins (Lead Dentist)', desc: 'EMR & Prescribing' },
+  { id: 'RECEPTIONIST', label: 'Emily Watson (Front Desk Executive)', desc: 'Billing & Bookings' }
 ];
 
 export default function App() {
@@ -197,7 +197,7 @@ export default function App() {
           {/* Active Navigation Title */}
           <div className="flex items-center space-x-2">
             <span className="text-xs bg-primary-50 text-primary-700 font-bold px-2 py-0.5 rounded uppercase">
-              {currentRole} Access
+              Staff Account: {ROLES.find(r => r.id === currentRole)?.label || currentRole}
             </span>
           </div>
 
@@ -217,7 +217,7 @@ export default function App() {
             {/* Role selection dropdown to test 3-tier RBAC access levels */}
             {import.meta.env.MODE === 'development' && (
               <div className="flex items-center space-x-2 border-l border-slate-200 pl-4">
-                <span className="text-xs font-semibold text-slate-400">Simulate Role:</span>
+                <span className="text-xs font-semibold text-slate-400">Switch Account:</span>
                 <select
                   value={currentRole}
                   onChange={(e) => handleRoleChange(e.target.value)}

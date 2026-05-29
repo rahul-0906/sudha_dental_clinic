@@ -44,18 +44,18 @@ export default function PatientHistoryView() {
     setLoading(true);
     try {
       // 1. Fetch treatment history
-      const treatments = await api.treatments.list();
-      const patientTreatments = treatments.filter(t => t.patient.id === patient.id);
+      const treatments = await api.treatments.list() || [];
+      const patientTreatments = treatments.filter(t => t.patient && t.patient.id === patient.id);
       setTreatmentHistory(patientTreatments.sort((a, b) => b.id - a.id));
 
       // 2. Fetch appointments
-      const appointments = await api.appointments.list();
-      const patientAppts = appointments.filter(a => a.patient.id === patient.id);
+      const appointments = await api.appointments.list() || [];
+      const patientAppts = appointments.filter(a => a.patient && a.patient.id === patient.id);
       setAppointmentHistory(patientAppts.sort((a, b) => new Date(b.appointmentTime) - new Date(a.appointmentTime)));
 
       // 3. Fetch invoices
-      const invoices = await api.billing.invoices();
-      const patientInvoices = invoices.filter(i => i.patient.id === patient.id);
+      const invoices = await api.billing.invoices() || [];
+      const patientInvoices = invoices.filter(i => i.patient && i.patient.id === patient.id);
       setInvoiceHistory(patientInvoices.sort((a, b) => b.id - a.id));
     } catch (error) {
       console.error("Failed to load patient history:", error);

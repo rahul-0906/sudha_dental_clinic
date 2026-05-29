@@ -6,6 +6,7 @@ export default function InventoryView({ userRole }) {
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState('MATERIAL'); // 'MATERIAL' or 'MEDICINE'
+  const [searchTerm, setSearchTerm] = useState('');
   
   // Replenish Modal State
   const [selectedItem, setSelectedItem] = useState(null);
@@ -104,10 +105,12 @@ export default function InventoryView({ userRole }) {
 
   const isAdmin = userRole === 'ADMIN';
 
-  // Filter based on selected sub-tab
+  // Filter based on selected sub-tab and search term
   const filteredInventory = inventory.filter(item => {
     const itemType = item.type || 'MATERIAL';
-    return itemType === activeSubTab;
+    const matchesTab = itemType === activeSubTab;
+    const matchesSearch = item.materialName.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesTab && matchesSearch;
   });
 
   // Calculate stats for tab badges
@@ -145,41 +148,55 @@ export default function InventoryView({ userRole }) {
         </div>
       </div>
 
-      {/* Sub Tab Navigation */}
-      <div className="flex border-b border-slate-200">
-        <button
-          onClick={() => setActiveSubTab('MATERIAL')}
-          className={`flex items-center space-x-2 px-6 py-3 border-b-2 font-semibold text-sm transition-all ${
-            activeSubTab === 'MATERIAL'
-              ? 'border-primary-600 text-primary-700'
-              : 'border-transparent text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          <Layers className="w-4 h-4" />
-          <span>Consumables & Materials</span>
-          {materialAlertCount > 0 && (
-            <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
-              {materialAlertCount} alert{materialAlertCount > 1 ? 's' : ''}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveSubTab('MEDICINE')}
-          className={`flex items-center space-x-2 px-6 py-3 border-b-2 font-semibold text-sm transition-all ${
-            activeSubTab === 'MEDICINE'
-              ? 'border-primary-600 text-primary-700'
-              : 'border-transparent text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          <Pill className="w-4 h-4" />
-          <span>Medicines Inventory</span>
-          {medicineAlertCount > 0 && (
-            <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
-              {medicineAlertCount} alert{medicineAlertCount > 1 ? 's' : ''}
-            </span>
-          )}
-        </button>
+      {/* Sub Tab Navigation & Search */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b border-slate-200 gap-4 pb-2 md:pb-0">
+        <div className="flex">
+          <button
+            onClick={() => { setActiveSubTab('MATERIAL'); setSearchTerm(''); }}
+            className={`flex items-center space-x-2 px-6 py-3 border-b-2 font-semibold text-sm transition-all ${
+              activeSubTab === 'MATERIAL'
+                ? 'border-primary-600 text-primary-700'
+                : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Layers className="w-4 h-4" />
+            <span>Consumables & Materials</span>
+            {materialAlertCount > 0 && (
+              <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                {materialAlertCount} alert{materialAlertCount > 1 ? 's' : ''}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => { setActiveSubTab('MEDICINE'); setSearchTerm(''); }}
+            className={`flex items-center space-x-2 px-6 py-3 border-b-2 font-semibold text-sm transition-all ${
+              activeSubTab === 'MEDICINE'
+                ? 'border-primary-600 text-primary-700'
+                : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            <Pill className="w-4 h-4" />
+            <span>Medicines Inventory</span>
+            {medicineAlertCount > 0 && (
+              <span className="bg-red-100 text-red-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                {medicineAlertCount} alert{medicineAlertCount > 1 ? 's' : ''}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Inline Search Input */}
+        <div className="px-4 pb-2 md:pb-0 w-full md:w-fit">
+          <input
+            type="text"
+            placeholder={`Search ${activeSubTab === 'MATERIAL' ? 'materials' : 'medicines'}...`}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-3.5 py-1.5 border border-slate-200 rounded-lg text-xs bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 w-full md:w-56 font-semibold text-slate-800"
+          />
+        </div>
       </div>
+
 
       {/* Critical Stock Alerts Banner for the selected tab */}
       {filteredInventory.some(item => item.quantity < item.lowStockThreshold) && (
