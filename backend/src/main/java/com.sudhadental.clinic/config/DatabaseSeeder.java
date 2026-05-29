@@ -22,36 +22,42 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final TreatmentMaterialMappingRepository treatmentMaterialMappingRepository;
     private final AppointmentRepository appointmentRepository;
     private final CashLedgerRepository cashLedgerRepository;
+    private final TreatmentRecordRepository treatmentRecordRepository;
+    private final InvoiceRepository invoiceRepository;
+    private final PrescriptionRepository prescriptionRepository;
 
     @Override
     public void run(String... args) throws Exception {
         log.info("DatabaseSeeder starting...");
 
         // 1. Seed Users
-        if (userRepository.count() == 0) {
+        if (userRepository.count() == 0 || !userRepository.findByUsername("admin").map(User::getFullName).orElse("").contains("Mariyappan")) {
+            appointmentRepository.deleteAll();
+            userRepository.deleteAll();
+            
             User admin = User.builder()
                     .username("admin")
                     .password("password")
-                    .fullName("Dr. Sudha (Owner)")
+                    .fullName("Dr. Mariyappan (Owner)")
                     .role(Role.ADMIN)
                     .build();
 
             User dentist = User.builder()
                     .username("dentist")
                     .password("password")
-                    .fullName("Dr. Sarah Jenkins")
+                    .fullName("Dr. Suraj")
                     .role(Role.DENTIST)
                     .build();
 
             User receptionist = User.builder()
                     .username("receptionist")
                     .password("password")
-                    .fullName("Emily Watson")
+                    .fullName("Nurse")
                     .role(Role.RECEPTIONIST)
                     .build();
 
             userRepository.saveAll(Arrays.asList(admin, dentist, receptionist));
-            log.info("Seeded initial clinic users: admin, dentist, receptionist.");
+            log.info("Seeded initial clinic users (Dr. Mariyappan, Dr. Suraj, Nurse).");
         }
 
         // 2. Seed Inventory
@@ -162,6 +168,124 @@ public class DatabaseSeeder implements CommandLineRunner {
             CashLedger led2 = CashLedger.builder().debit(500.0).credit(0.0).description("Opening balance / Consultation fees").build();
             cashLedgerRepository.saveAll(Arrays.asList(led1, led2));
             log.info("Seeded initial double-entry ledger inflow/outflow entries.");
+        }
+
+        // 5. Seed Treatment Records, Prescriptions, and Invoices for history timeline
+        if (treatmentRecordRepository.count() == 0) {
+            Optional<User> dentistOpt = userRepository.findByUsername("dentist");
+            Optional<Patient> p1 = patientRepository.findAll().stream().filter(p -> p.getName().contains("John")).findFirst();
+            Optional<Patient> p2 = patientRepository.findAll().stream().filter(p -> p.getName().contains("Jane")).findFirst();
+            Optional<Patient> p3 = patientRepository.findAll().stream().filter(p -> p.getName().contains("Alice")).findFirst();
+
+            if (dentistOpt.isPresent() && p1.isPresent() && p2.isPresent() && p3.isPresent()) {
+                User doc = dentistOpt.get();
+
+                // Treatment 1 for Patient 1
+                TreatmentRecord tr1 = TreatmentRecord.builder()
+                        .patient(p1.get())
+                        .dentist(doc)
+                        .chiefComplaint("Routine dental checkup and staining")
+                        .diagnosis("Mild plaque and calculus accumulation")
+                        .procedureCompleted("Teeth Cleaning")
+                        .cost(1200.0)
+                        .build();
+                treatmentRecordRepository.save(tr1);
+
+                prescriptionRepository.save(Prescription.builder()
+                        .treatmentRecord(tr1)
+                        .medicineName("Chlorhexidine Mouthwash")
+                        .dosage("10ml rinse")
+                        .duration("7 days")
+                        .instructions("Twice daily after meals")
+                        .build());
+
+                invoiceRepository.save(Invoice.builder()
+                        .patient(p1.get())
+                        .totalAmount(1200.0)
+                        .paidAmount(1200.0)
+                        .status(InvoiceStatus.PAID)
+                        .build());
+
+                // Treatment 2 for Patient 1
+                TreatmentRecord tr2 = TreatmentRecord.builder()
+                        .patient(p1.get())
+                        .dentist(doc)
+                        .chiefComplaint("Food lodgement in upper back tooth")
+                        .diagnosis("Dental caries in tooth #26")
+                        .procedureCompleted("Filling")
+                        .cost(1500.0)
+                        .build();
+                treatmentRecordRepository.save(tr2);
+
+                prescriptionRepository.save(Prescription.builder()
+                        .treatmentRecord(tr2)
+                        .medicineName("Ibuprofen 400mg")
+                        .dosage("400mg")
+                        .duration("3 days")
+                        .instructions("Once daily if pain occurs")
+                        .build());
+
+                invoiceRepository.save(Invoice.builder()
+                        .patient(p1.get())
+                        .totalAmount(1500.0)
+                        .paidAmount(1000.0)
+                        .status(InvoiceStatus.PARTIALLY_PAID)
+                        .build());
+
+                // Treatment for Patient 2
+                TreatmentRecord tr3 = TreatmentRecord.builder()
+                        .patient(p2.get())
+                        .dentist(doc)
+                        .chiefComplaint("General teeth checkup")
+                        .diagnosis("Healthy dentition, no active decay")
+                        .procedureCompleted("Consultation Only")
+                        .cost(300.0)
+                        .build();
+                treatmentRecordRepository.save(tr3);
+
+                invoiceRepository.save(Invoice.builder()
+                        .patient(p2.get())
+                        .totalAmount(300.0)
+                        .paidAmount(300.0)
+                        .status(InvoiceStatus.PAID)
+                        .build());
+
+                // Treatment for Patient 3
+                TreatmentRecord tr4 = TreatmentRecord.builder()
+                        .patient(p3.get())
+                        .dentist(doc)
+                        .chiefComplaint("Severe pain and sensitivity when drinking cold water")
+                        .diagnosis("Irreversible pulpitis in tooth #36")
+                        .procedureCompleted("Root Canal")
+                        .cost(6500.0)
+                        .build();
+                treatmentRecordRepository.save(tr4);
+
+                prescriptionRepository.save(Prescription.builder()
+                        .treatmentRecord(tr4)
+                        .medicineName("Amoxicillin 500mg")
+                        .dosage("500mg")
+                        .duration("5 days")
+                        .instructions("Three times daily")
+                        .build());
+
+                prescriptionRepository.save(Prescription.builder()
+                        .treatmentRecord(tr4)
+                        .medicineName("Ibuprofen 400mg")
+                        .dosage("400mg")
+                        .duration("3 days")
+                        .instructions("Twice daily")
+                        .build());
+
+                invoiceRepository.save(Invoice.builder()
+                        .patient(p3.get())
+                        .totalAmount(6500.0)
+                        .paidAmount(6500.0)
+                        .status(InvoiceStatus.PAID)
+                        .build());
+
+                log.info("Seeded initial treatment history records, prescriptions, and invoices for timeline.");
+            }
         }
 
         log.info("DatabaseSeeder execution finished successfully.");

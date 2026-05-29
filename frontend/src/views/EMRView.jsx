@@ -24,6 +24,7 @@ export default function EMRView({ userRole }) {
   // Prescription List
   const [prescriptions, setPrescriptions] = useState([]);
   const [newMed, setNewMed] = useState({ medicineName: '', dosage: '', duration: '', instructions: '' });
+  const [dentistId, setDentistId] = useState('1');
 
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
@@ -110,7 +111,7 @@ export default function EMRView({ userRole }) {
     try {
       await api.treatments.create({
         patientId: parseInt(selectedPatientId),
-        dentistId: 2, // Mocked Dentist Dr. Sarah Jenkins
+        dentistId: parseInt(dentistId),
         chiefComplaint,
         diagnosis,
         procedureCompleted,
@@ -178,7 +179,7 @@ export default function EMRView({ userRole }) {
 
         <div className="p-6 space-y-6">
           {/* Patient Selector */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-xs font-semibold text-slate-500 uppercase mb-1 flex items-center">
                 <User className="w-3.5 h-3.5 mr-1" />
@@ -204,6 +205,17 @@ export default function EMRView({ userRole }) {
                 {procedureOptions.map(procName => (
                   <option key={procName} value={procName}>{procName}</option>
                 ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Performing Dentist</label>
+              <select
+                value={dentistId}
+                onChange={(e) => setDentistId(e.target.value)}
+                className="w-full px-3.5 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm bg-white"
+              >
+                <option value="1">Dr. Mariyappan (Owner & Doctor)</option>
+                <option value="2">Dr. Suraj (Additional Doctor)</option>
               </select>
             </div>
           </div>

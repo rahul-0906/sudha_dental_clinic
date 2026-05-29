@@ -10,9 +10,8 @@ import { LayoutDashboard, BookOpen, Layers, CreditCard, Stethoscope, Users, Cale
 import { api } from './api';
 
 const ROLES = [
-  { id: 'ADMIN', label: 'Dr. Sudha (Clinic Director)', desc: 'Full control' },
-  { id: 'DENTIST', label: 'Dr. Sarah Jenkins (Lead Dentist)', desc: 'EMR & Prescribing' },
-  { id: 'RECEPTIONIST', label: 'Emily Watson (Front Desk Executive)', desc: 'Billing & Bookings' }
+  { id: 'ADMIN', label: 'Dr. Mariyappan (Owner & Doctor)', desc: 'Full control' },
+  { id: 'RECEPTIONIST', label: 'Nurse', desc: 'Bookings & Billing' }
 ];
 
 export default function App() {
@@ -26,7 +25,7 @@ export default function App() {
 
   const handleRoleChange = (role) => {
     setCurrentRole(role);
-    const username = role.toLowerCase() + '_user';
+    const username = role === 'ADMIN' ? 'admin' : 'receptionist';
     sessionStorage.setItem('currentUser', JSON.stringify({ username, role }));
   };
 
@@ -282,8 +281,8 @@ export default function App() {
                       onChange={(e) => setApptForm({ ...apptForm, dentistId: e.target.value })}
                       className="w-full px-3.5 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none"
                     >
-                      <option value="2">Dr. Sarah Jenkins (Dentist)</option>
-                      <option value="1">Dr. Sudha (Owner)</option>
+                      <option value="2">Dr. Suraj (Additional Doctor)</option>
+                      <option value="1">Dr. Mariyappan (Owner & Doctor)</option>
                     </select>
                   </div>
                   <div>

@@ -66,7 +66,7 @@ const seedMockData = () => {
       {
         id: 1,
         patient: { id: 1, name: 'John Doe', phone: '9876543210', email: 'john.doe@example.com' },
-        dentist: { id: 2, fullName: 'Dr. Sarah Jenkins' },
+        dentist: { id: 2, fullName: 'Dr. Suraj' },
         appointmentTime: new Date(today.setHours(10, 0, 0)).toISOString(),
         status: 'CONFIRMED',
         chiefComplaint: 'Toothache in upper molar',
@@ -75,7 +75,7 @@ const seedMockData = () => {
       {
         id: 2,
         patient: { id: 2, name: 'Jane Smith', phone: '9876543211', email: 'jane.smith@example.com' },
-        dentist: { id: 2, fullName: 'Dr. Sarah Jenkins' },
+        dentist: { id: 2, fullName: 'Dr. Suraj' },
         appointmentTime: new Date(today.setHours(14, 30, 0)).toISOString(),
         status: 'PENDING',
         chiefComplaint: 'Routine dental cleanup',
@@ -84,7 +84,7 @@ const seedMockData = () => {
       {
         id: 3,
         patient: { id: 3, name: 'Alice Johnson', phone: '9876543212', email: 'alice.j@example.com' },
-        dentist: { id: 2, fullName: 'Dr. Sarah Jenkins' },
+        dentist: { id: 2, fullName: 'Dr. Suraj' },
         appointmentTime: new Date(tomorrow.setHours(11, 0, 0)).toISOString(),
         status: 'PENDING',
         chiefComplaint: 'Root canal follow-up',
@@ -100,21 +100,101 @@ const seedMockData = () => {
     ]));
   }
 
-  if (!localStorage.getItem(KEYS.INVOICES)) {
+  if (!localStorage.getItem(KEYS.INVOICES) || JSON.parse(localStorage.getItem(KEYS.INVOICES)).length <= 1) {
     localStorage.setItem(KEYS.INVOICES, JSON.stringify([
       {
-        id: 1,
+        id: 101,
         patient: { id: 1, name: 'John Doe', phone: '9876543210' },
-        totalAmount: 150,
-        paidAmount: 150,
+        totalAmount: 1200,
+        paidAmount: 1200,
         status: 'PAID',
-        billingDate: new Date().toISOString()
+        billingDate: new Date(Date.now() - 14 * 86400000).toISOString()
+      },
+      {
+        id: 102,
+        patient: { id: 1, name: 'John Doe', phone: '9876543210' },
+        totalAmount: 1500,
+        paidAmount: 1000,
+        status: 'PARTIALLY_PAID',
+        billingDate: new Date(Date.now() - 7 * 86400000).toISOString()
+      },
+      {
+        id: 103,
+        patient: { id: 2, name: 'Jane Smith', phone: '9876543211' },
+        totalAmount: 300,
+        paidAmount: 300,
+        status: 'PAID',
+        billingDate: new Date(Date.now() - 3 * 86400000).toISOString()
+      },
+      {
+        id: 104,
+        patient: { id: 3, name: 'Alice Johnson', phone: '9876543212' },
+        totalAmount: 6500,
+        paidAmount: 6500,
+        status: 'PAID',
+        billingDate: new Date(Date.now() - 5 * 86400000).toISOString()
       }
     ]));
   }
 
-  if (!localStorage.getItem(KEYS.TREATMENTS)) {
-    localStorage.setItem(KEYS.TREATMENTS, JSON.stringify([]));
+  if (!localStorage.getItem(KEYS.TREATMENTS) || JSON.parse(localStorage.getItem(KEYS.TREATMENTS)).length === 0) {
+    localStorage.setItem(KEYS.TREATMENTS, JSON.stringify([
+      {
+        id: 201,
+        patient: { id: 1, name: 'John Doe', phone: '9876543210' },
+        dentist: { id: 2, fullName: 'Dr. Suraj' },
+        chiefComplaint: 'Routine dental checkup and staining',
+        diagnosis: 'Mild plaque and calculus accumulation',
+        procedureCompleted: 'Teeth Cleaning',
+        cost: 1200,
+        prescriptions: [
+          { medicineName: 'Chlorhexidine Mouthwash', dosage: '10ml rinse', duration: '7 days', instructions: 'Twice daily after meals' }
+        ],
+        createdBy: 'System',
+        createdDate: new Date(Date.now() - 14 * 86400000).toISOString()
+      },
+      {
+        id: 202,
+        patient: { id: 1, name: 'John Doe', phone: '9876543210' },
+        dentist: { id: 2, fullName: 'Dr. Suraj' },
+        chiefComplaint: 'Food lodgement in upper back tooth',
+        diagnosis: 'Dental caries in tooth #26',
+        procedureCompleted: 'Filling',
+        cost: 1500,
+        prescriptions: [
+          { medicineName: 'Ibuprofen 400mg', dosage: '400mg', duration: '3 days', instructions: 'Once daily if pain occurs' }
+        ],
+        createdBy: 'System',
+        createdDate: new Date(Date.now() - 7 * 86400000).toISOString()
+      },
+      {
+        id: 203,
+        patient: { id: 2, name: 'Jane Smith', phone: '9876543211' },
+        dentist: { id: 2, fullName: 'Dr. Suraj' },
+        chiefComplaint: 'General teeth checkup',
+        diagnosis: 'Healthy dentition, no active decay',
+        procedureCompleted: 'Consultation Only',
+        cost: 300,
+        prescriptions: [],
+        createdBy: 'System',
+        createdDate: new Date(Date.now() - 3 * 86400000).toISOString()
+      },
+      {
+        id: 204,
+        patient: { id: 3, name: 'Alice Johnson', phone: '9876543212' },
+        dentist: { id: 2, fullName: 'Dr. Suraj' },
+        chiefComplaint: 'Severe pain and sensitivity when drinking cold water',
+        diagnosis: 'Irreversible pulpitis in tooth #36',
+        procedureCompleted: 'Root Canal',
+        cost: 6500,
+        prescriptions: [
+          { medicineName: 'Amoxicillin 500mg', dosage: '500mg', duration: '5 days', instructions: 'Three times daily' },
+          { medicineName: 'Ibuprofen 400mg', dosage: '400mg', duration: '3 days', instructions: 'Twice daily' }
+        ],
+        createdBy: 'System',
+        createdDate: new Date(Date.now() - 5 * 86400000).toISOString()
+      }
+    ]));
   }
 };
 
@@ -207,7 +287,7 @@ function mockRequest(endpoint, options = {}) {
       const newApp = {
         id: Date.now(),
         patient: pat || { id: body.patientId, name: 'Patient ' + body.patientId },
-        dentist: { id: body.dentistId, fullName: body.dentistId === 1 ? 'Dr. Sudha' : 'Dr. Sarah Jenkins' },
+        dentist: { id: Number(body.dentistId), fullName: Number(body.dentistId) === 1 ? 'Dr. Mariyappan' : 'Dr. Suraj' },
         appointmentTime: body.appointmentTime,
         status: 'PENDING',
         chiefComplaint: body.chiefComplaint || '',
@@ -402,7 +482,7 @@ function mockRequest(endpoint, options = {}) {
       const newRecord = {
         id: Date.now(),
         patient: p || { id: body.patientId, name: 'Patient ' + body.patientId },
-        dentist: { id: body.dentistId, fullName: body.dentistId === 1 ? 'Dr. Sudha' : 'Dr. Sarah Jenkins' },
+        dentist: { id: Number(body.dentistId), fullName: Number(body.dentistId) === 1 ? 'Dr. Mariyappan' : 'Dr. Suraj' },
         chiefComplaint: body.chiefComplaint,
         diagnosis: body.diagnosis,
         procedureCompleted: body.procedureCompleted,

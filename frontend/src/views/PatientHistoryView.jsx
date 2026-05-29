@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../api';
-import { Search, User, Phone, Mail, FileText, Calendar, Plus, Pill, ShieldAlert, Edit3, ClipboardList, CheckCircle } from 'lucide-react';
+import { Search, User, Phone, Mail, FileText, Calendar, Plus, Pill, ShieldAlert, Edit3, ClipboardList, CheckCircle, IndianRupee } from 'lucide-react';
 
 export default function PatientHistoryView() {
   const [patients, setPatients] = useState([]);
@@ -26,12 +26,14 @@ export default function PatientHistoryView() {
   const loadPatients = async () => {
     try {
       const data = await api.patients.list();
-      setPatients(data);
-      if (data.length > 0 && !selectedPatient) {
-        handleSelectPatient(data[0]);
+      const list = Array.isArray(data) ? data : [];
+      setPatients(list);
+      if (list.length > 0 && !selectedPatient) {
+        handleSelectPatient(list[0]);
       }
     } catch (error) {
       console.error("Failed to load patients:", error);
+      setPatients([]);
     }
   };
 
@@ -39,23 +41,36 @@ export default function PatientHistoryView() {
     loadPatients();
   }, []);
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const d = new Date(dateString);
+    return isNaN(d.getTime()) ? 'Invalid Date' : d.toLocaleDateString();
+  };
+
   const handleSelectPatient = async (patient) => {
     setSelectedPatient(patient);
     setLoading(true);
     try {
       // 1. Fetch treatment history
-      const treatments = await api.treatments.list() || [];
-      const patientTreatments = treatments.filter(t => t.patient && t.patient.id === patient.id);
+      const tList = await api.treatments.list();
+      const treatments = Array.isArray(tList) ? tList : [];
+      const patientTreatments = treatments.filter(t => t && t.patient && t.patient.id === patient.id);
       setTreatmentHistory(patientTreatments.sort((a, b) => b.id - a.id));
 
       // 2. Fetch appointments
-      const appointments = await api.appointments.list() || [];
-      const patientAppts = appointments.filter(a => a.patient && a.patient.id === patient.id);
-      setAppointmentHistory(patientAppts.sort((a, b) => new Date(b.appointmentTime) - new Date(a.appointmentTime)));
+      const aList = await api.appointments.list();
+      const appointments = Array.isArray(aList) ? aList : [];
+      const patientAppts = appointments.filter(a => a && a.patient && a.patient.id === patient.id);
+      setAppointmentHistory(patientAppts.sort((a, b) => {
+        const timeA = a.appointmentTime ? new Date(a.appointmentTime).getTime() : 0;
+        const timeB = b.appointmentTime ? new Date(b.appointmentTime).getTime() : 0;
+        return timeB - timeA;
+      }));
 
       // 3. Fetch invoices
-      const invoices = await api.billing.invoices() || [];
-      const patientInvoices = invoices.filter(i => i.patient && i.patient.id === patient.id);
+      const iList = await api.billing.invoices();
+      const invoices = Array.isArray(iList) ? iList : [];
+      const patientInvoices = invoices.filter(i => i && i.patient && i.patient.id === patient.id);
       setInvoiceHistory(patientInvoices.sort((a, b) => b.id - a.id));
     } catch (error) {
       console.error("Failed to load patient history:", error);
@@ -132,10 +147,10 @@ export default function PatientHistoryView() {
   };
 
   // Filter patients based on search
-  const filteredPatients = patients.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    p.phone.includes(searchTerm)
-  );
+  const filteredPatients = Array.isArray(patients) ? patients.filter(p => 
+    p && p.name && (p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    p.phone.includes(searchTerm))
+  ) : [];
 
   return (
     <div className="space-y-6 max-w-6xl">
@@ -263,7 +278,7 @@ export default function PatientHistoryView() {
                               <div className="flex justify-between items-start">
                                 <div>
                                   <h4 className="font-extrabold text-slate-800 text-xs">{tr.procedureCompleted}</h4>
-                                  <p className="text-[10px] text-slate-400 font-mono mt-0.5">Log ID: #TR-{tr.id} • Dr. {tr.dentist?.fullName || 'Sarah Jenkins'}</p>
+                                  <p className="text-[10px] text-slate-400 font-mono mt-0.5">Log ID: #TR-{tr.id} • Dr. {tr.dentist?.fullName || 'Mariyappan'}</p>
                                 </div>
                                 <span className="font-bold text-slate-700 text-xs">₹{tr.cost}</span>
                               </div>
@@ -354,7 +369,7 @@ export default function PatientHistoryView() {
                           <div key={appt.id} className="border border-slate-200/60 rounded-xl p-3 text-xs bg-slate-50/50">
                             <div className="flex justify-between items-center font-semibold">
                               <span className="text-slate-700">
-                                {new Date(appt.appointmentTime).toLocaleDateString()}
+                                {formatDate(appt.appointmentTime)}
                               </span>
                               <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
                                 appt.status === 'COMPLETED' ? 'bg-slate-100 text-slate-600' : 'bg-primary-50 text-primary-700'
