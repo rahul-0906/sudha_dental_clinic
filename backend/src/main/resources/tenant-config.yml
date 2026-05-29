@@ -1,0 +1,8 @@
+clinic:
+  name: "Sudha Dental Clinic"
+  primary-color: "#0f766e"  # Sleek teal-700
+  secondary-color: "#0d9488" # Teal-600
+  email: "info@sudhadentalclinic.com"
+  phone: "+91 98765 43210"
+  address: "Opposite Town Hall, Main Road, Cityville"
+  whatsapp-enabled: false
