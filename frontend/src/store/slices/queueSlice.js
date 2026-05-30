@@ -16,9 +16,10 @@ export const fetchTodayQueue = createAsyncThunk(
 
 export const updateVisitStatus = createAsyncThunk(
   'queue/updateVisitStatus',
-  async ({ id, status }, { rejectWithValue }) => {
+  async ({ id, visitId, status }, { rejectWithValue }) => {
     try {
-      const res = await apiUpdateStatus(id, status)
+      const visitIdToUse = id || visitId
+      const res = await apiUpdateStatus(visitIdToUse, status)
       return res.data
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || 'Failed to update status')

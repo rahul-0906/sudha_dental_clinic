@@ -32,7 +32,7 @@ function PatientCard({ visit, onSelect, compact, nurseView }) {
 
   const handleStatusChange = async (newStatus) => {
     try {
-      await dispatch(updateVisitStatusThunk({ visitId: visit.id, status: newStatus })).unwrap()
+      await dispatch(updateVisitStatusThunk({ id: visit.id, status: newStatus })).unwrap()
       toast.success(`${visit.patient?.name} moved to ${STATUS_CONFIG[newStatus]?.label}`)
     } catch (err) {
       toast.error('Failed to update status')
