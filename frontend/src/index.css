@@ -5,28 +5,28 @@
 
 /* ── CSS Custom Properties ─────────────────────────────────── */
 :root {
-  --primary: #0D9488;
-  --primary-light: #14B8A6;
-  --primary-dark: #0F766E;
-  --primary-glow: rgba(20, 184, 166, 0.15);
-  --primary-glow-bright: rgba(20, 184, 166, 0.3);
+  --primary: #077A7D;
+  --primary-light: #0A9B9E;
+  --primary-dark: #055C5E;
+  --primary-glow: rgba(7, 122, 125, 0.08);
+  --primary-glow-bright: rgba(7, 122, 125, 0.18);
 
-  --bg-900: #0A0F0F;
-  --bg-800: #111918;
-  --bg-700: #162120;
-  --bg-600: #1C2B2A;
-  --surface: #1E2E2D;
-  --surface-hover: #243534;
-  --surface-active: #2A3F3E;
+  --bg-900: #F4F8F8;
+  --bg-800: #EBF1F1;
+  --bg-700: #DFE8E7;
+  --bg-600: #D2E0DF;
+  --surface: #FFFFFF;
+  --surface-hover: #F0F6F5;
+  --surface-active: #E3EFEF;
 
-  --border: rgba(20, 184, 166, 0.15);
-  --border-bright: rgba(20, 184, 166, 0.3);
-  --border-subtle: rgba(20, 184, 166, 0.08);
+  --border: rgba(7, 122, 125, 0.12);
+  --border-bright: rgba(7, 122, 125, 0.28);
+  --border-subtle: rgba(7, 122, 125, 0.06);
 
-  --text-primary: #E8F5F4;
-  --text-secondary: #9BC4C1;
-  --text-muted: #5C8F8B;
-  --text-disabled: #3A5C59;
+  --text-primary: #1C2E2E;
+  --text-secondary: #4A5F5F;
+  --text-muted: #7D9393;
+  --text-disabled: #A8BBBB;
 
   --success: #10B981;
   --success-bg: rgba(16, 185, 129, 0.12);
@@ -45,11 +45,11 @@
   --radius-2xl: 32px;
   --radius-full: 9999px;
 
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 30px rgba(20, 184, 166, 0.1);
-  --shadow-glow-bright: 0 0 40px rgba(20, 184, 166, 0.25);
+  --shadow-sm: 0 2px 8px rgba(7, 122, 125, 0.06);
+  --shadow: 0 4px 20px rgba(7, 122, 125, 0.08);
+  --shadow-lg: 0 8px 30px rgba(7, 122, 125, 0.12);
+  --shadow-glow: 0 0 20px rgba(7, 122, 125, 0.06);
+  --shadow-glow-bright: 0 0 30px rgba(7, 122, 125, 0.18);
 
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -121,21 +121,21 @@ a:hover { color: var(--primary); }
 
 /* ── Glassmorphism ──────────────────────────────────────────── */
 .glass {
-  background: rgba(30, 46, 45, 0.6);
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
 }
 
 .glass-bright {
-  background: rgba(36, 53, 52, 0.75);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-bright);
 }
 
 .glass-dark {
-  background: rgba(17, 25, 24, 0.8);
+  background: rgba(244, 248, 248, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-subtle);

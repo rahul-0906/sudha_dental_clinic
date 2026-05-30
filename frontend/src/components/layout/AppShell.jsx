@@ -18,8 +18,8 @@ const ToothLogo = () => (
       fill="url(#tg)" />
     <defs>
       <linearGradient id="tg" x1="18" y1="8" x2="62" y2="72" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stopColor="#14B8A6"/>
-        <stop offset="100%" stopColor="#0F766E"/>
+        <stop offset="0%" stopColor="#0A9B9E"/>
+        <stop offset="100%" stopColor="#077A7D"/>
       </linearGradient>
     </defs>
   </svg>
@@ -100,14 +100,14 @@ export default function AppShell() {
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '6px 14px', borderRadius: 'var(--radius-sm)',
-                background: activeView === id ? 'rgba(13,148,136,0.2)' : 'transparent',
+                background: activeView === id ? 'var(--primary-glow-bright)' : 'transparent',
                 border: activeView === id ? '1px solid var(--border-bright)' : '1px solid transparent',
-                color: activeView === id ? 'var(--primary-light)' : 'var(--text-secondary)',
+                color: activeView === id ? 'var(--primary)' : 'var(--text-secondary)',
                 cursor: 'pointer', fontSize: 13, fontWeight: 500,
                 transition: 'var(--transition)',
               }}
               onMouseEnter={(e) => {
-                if (activeView !== id) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
+                if (activeView !== id) e.currentTarget.style.background = 'rgba(0,0,0,0.03)'
               }}
               onMouseLeave={(e) => {
                 if (activeView !== id) e.currentTarget.style.background = 'transparent'
@@ -164,7 +164,7 @@ export default function AppShell() {
                 boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
               }} />
             </button>
-            <span style={{ fontSize: 11, color: isNurseMode ? 'var(--primary-light)' : 'var(--text-muted)', fontWeight: 600 }}>
+            <span style={{ fontSize: 11, color: isNurseMode ? 'var(--primary)' : 'var(--text-muted)', fontWeight: 600 }}>
               NURSE
             </span>
           </div>
@@ -172,8 +172,8 @@ export default function AppShell() {
           {/* Mode Badge */}
           <div style={{
             padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700,
-            background: isNurseMode ? 'rgba(13,148,136,0.2)' : 'rgba(255,255,255,0.06)',
-            color: isNurseMode ? 'var(--primary-light)' : 'var(--text-muted)',
+            background: isNurseMode ? 'var(--primary-glow-bright)' : 'rgba(0,0,0,0.05)',
+            color: isNurseMode ? 'var(--primary)' : 'var(--text-muted)',
             border: `1px solid ${isNurseMode ? 'var(--border-bright)' : 'transparent'}`,
           }}>
             {isNurseMode ? '👩‍⚕️ NURSE MODE' : '🩺 SOLO MODE'}
