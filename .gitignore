@@ -1,0 +1,27 @@
+# Maven / Java Build
+backend/target/
+backend/bin/
+backend/*.jar
+backend/*.war
+
+# Node / React Build
+frontend/node_modules/
+frontend/dist/
+frontend/.eslintcache
+frontend/npm-debug.log*
+
+# X-Ray Local Uploads
+backend/uploads/
+backend/uploads/xrays/
+
+# System / IDE Files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.suo
+*.user
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
