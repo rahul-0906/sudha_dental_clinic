@@ -123,7 +123,7 @@ export default function FinancialLedger() {
       {loading ? (
         <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>Loading transactions...</div>
       ) : (
-        <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', overflow: 'hidden' }}>
+        <div style={{ width: '100%', background: 'var(--surface)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--bg-700)', borderBottom: '1px solid var(--border)' }}>

@@ -195,7 +195,7 @@ export default function AppShell() {
       </header>
 
       {/* MAIN CONTENT */}
-      <main className="flex flex-1 overflow-hidden w-full bg-slate-50">
+      <main className="flex-1 w-full overflow-hidden flex flex-col bg-slate-50">
         {renderContent()}
       </main>
     </div>
