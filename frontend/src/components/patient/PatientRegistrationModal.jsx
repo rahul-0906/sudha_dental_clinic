@@ -1,14 +1,15 @@
 import { useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { X, Check, UserPlus } from 'lucide-react'
 import { registerPatient } from '../../api/patients'
 import { setSelectedPatient } from '../../store/slices/patientSlice'
-import { addToQueue } from '../../api/visits'
+import { addToQueue, updateVisitStatus } from '../../api/visits'
 import { fetchTodayQueue } from '../../store/slices/queueSlice'
 import toast from 'react-hot-toast'
 
 export default function PatientRegistrationModal({ onClose }) {
   const dispatch = useDispatch()
+  const isStaffMode = useSelector((state) => state.app.isStaffAvailable)
   const [form, setForm] = useState({
     name: '', phone: '', dob: '', gender: '', address: ''
   })
@@ -36,9 +37,13 @@ export default function PatientRegistrationModal({ onClose }) {
 
       if (addQueue) {
         try {
-          await addToQueue(patient.id)
+          const queueRes = await addToQueue(patient.id)
+          if (!isStaffMode) {
+            const newVisit = queueRes.data
+            await updateVisitStatus(newVisit.id, 'CONSULTATION')
+          }
           dispatch(fetchTodayQueue())
-          toast.success(`${patient.name} registered & added to queue!`)
+          toast.success(isStaffMode ? `${patient.name} registered & added to queue!` : `${patient.name} registered & consult started!`)
         } catch {
           toast.success(`${patient.name} registered successfully!`)
         }
@@ -154,11 +159,11 @@ export default function PatientRegistrationModal({ onClose }) {
           </label>
 
           {/* Buttons */}
-          <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-            <button type="button" onClick={onClose} className="btn-secondary" style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12, width: '100%', marginTop: 16 }}>
+            <button type="button" onClick={onClose} className="btn-secondary">
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="btn-primary" style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            <button type="submit" disabled={loading} className="btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               {loading ? 'Registering...' : (
                 <>
                   <Check size={16} />

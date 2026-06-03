@@ -11,6 +11,7 @@ export default function ConsultationForm({ visitId }) {
   const dispatch = useDispatch()
   const queue = useSelector((state) => state.queue.queue)
   const selectedPatient = useSelector((state) => state.patient.selectedPatient)
+  const queueLoading = useSelector((state) => state.queue.loading)
 
   // Find the active consultation visit
   const activeVisit = visitId
@@ -107,7 +108,7 @@ export default function ConsultationForm({ visitId }) {
 
       {!activeVisit && (
         <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-muted)', fontSize: 13 }}>
-          Patient must be in queue to start a consultation.
+          {queueLoading ? 'Loading consultation state...' : 'Patient must be in queue to start a consultation.'}
         </div>
       )}
 

@@ -1,15 +1,17 @@
 import { useState, useRef, useCallback } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { Search, X, User, Phone } from 'lucide-react'
 import { searchPatients } from '../../api/patients'
 import { setSelectedPatient } from '../../store/slices/patientSlice'
-import { addToQueue } from '../../api/visits'
+import { addToQueue, updateVisitStatus } from '../../api/visits'
 import { fetchTodayQueue } from '../../store/slices/queueSlice'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 
 export default function PatientSearch() {
   const dispatch = useDispatch()
+  const isStaffMode = useSelector((state) => state.app.isStaffAvailable)
+  const queue = useSelector((state) => state.queue.queue)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
@@ -38,11 +40,36 @@ export default function PatientSearch() {
     }, 300)
   }, [])
 
-  const handleSelect = (patient) => {
+  const handleSelect = async (patient) => {
+    if (!isStaffMode) {
+      // Solo Mode (Doctor view): bypass queue and instantly start consultation
+      try {
+        const existingVisit = queue.find(v => v.patient?.id === patient.id && v.status !== 'DONE')
+        if (existingVisit) {
+          if (existingVisit.status === 'WAITING') {
+            await updateVisitStatus(existingVisit.id, 'CONSULTATION')
+            toast.success(`Consultation started for ${patient.name}`)
+          } else {
+            toast.success(`${patient.name} selected`)
+          }
+        } else {
+          const res = await addToQueue(patient.id)
+          const newVisit = res.data
+          await updateVisitStatus(newVisit.id, 'CONSULTATION')
+          toast.success(`Bypassed queue and started consultation for ${patient.name}`)
+        }
+        dispatch(fetchTodayQueue())
+      } catch (err) {
+        console.error('Failed to automatically start consultation', err)
+        toast.error('Failed to start consultation')
+      }
+    } else {
+      toast.success(`${patient.name} selected`)
+    }
+
     dispatch(setSelectedPatient(patient))
     setQuery(patient.name)
     setOpen(false)
-    toast.success(`${patient.name} selected`)
   }
 
   const handleAddToQueue = async (patient, e) => {
@@ -151,11 +178,18 @@ export default function PatientSearch() {
                 </div>
               </div>
               <button
-                onClick={(e) => handleAddToQueue(patient, e)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (!isStaffMode) {
+                    handleSelect(patient)
+                  } else {
+                    handleAddToQueue(patient, e)
+                  }
+                }}
                 className="btn-primary"
                 style={{ fontSize: 13, padding: '6px 12px', flexShrink: 0 }}
               >
-                + Queue
+                {isStaffMode ? '+ Queue' : 'Consult'}
               </button>
             </div>
           ))}
