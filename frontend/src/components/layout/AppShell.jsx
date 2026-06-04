@@ -23,6 +23,7 @@ import FinancialLedger from '../finance/FinancialLedger'
 import DailyReport from '../finance/DailyReport'
 import PatientHistoryPage from '../patient/PatientHistoryPage'
 import { format } from 'date-fns'
+import { StaffIcon, DoctorIcon } from '../common/ProfileIcons'
 
 export const ToothLogo = ({ size = 28 }) => (
   <svg width={size} height={size} viewBox="0 0 80 80" fill="none" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
@@ -168,19 +169,11 @@ export default function AppShell() {
           <div className="h-6 w-px bg-slate-200" />
 
           {/* Mode Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-sm font-medium text-slate-600">
-            {isStaffMode ? (
-              <>
-                <User size={14} strokeWidth={1.5} />
-                <span className="whitespace-nowrap">STAFF MODE</span>
-              </>
-            ) : (
-              <>
-                <Stethoscope size={14} strokeWidth={1.5} />
-                <span className="whitespace-nowrap">SOLO MODE</span>
-              </>
-            )}
-          </div>
+          {isStaffMode ? (
+            <StaffIcon size={20} className="!p-2 !rounded-xl" />
+          ) : (
+            <DoctorIcon size={20} className="!p-2 !rounded-xl" />
+          )}
 
           {/* Logout */}
           <button
