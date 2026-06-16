@@ -13,21 +13,24 @@ export default function StaffPanel() {
   const checkoutPatients = queue.filter(v => v.status === 'CHECKOUT')
 
   return (
-    <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 16, height: '100%' }}>
-      {/* Patient Search */}
-      <PatientSearch />
-
-      <button
-        onClick={() => setShowRegModal(true)}
-        className="btn-secondary"
-        style={{ width: '100%', fontSize: 16, padding: '10px 12px', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-      >
-        <UserPlus size={16} />
-        Register New Patient
-      </button>
+    <div className="p-4 flex flex-col gap-4 h-full overflow-hidden">
+      {/* Search & Register Patient 2-Column Row */}
+      <div className="flex items-center gap-2 w-full shrink-0">
+        <div className="flex-1 min-w-0">
+          <PatientSearch />
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowRegModal(true)}
+          className="flex items-center justify-center shrink-0 w-10 h-10 bg-teal-50 text-teal-700 border border-teal-200 rounded-lg hover:bg-teal-100 transition-colors cursor-pointer"
+          title="Register New Patient"
+        >
+          <UserPlus size={20} strokeWidth={1.5} />
+        </button>
+      </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: 4 }}>
+      <div className="flex gap-1 shrink-0">
         {['queue', 'checkout'].map(tab => (
           <button
             key={tab}
@@ -60,11 +63,11 @@ export default function StaffPanel() {
       </div>
 
       {activeTab === 'queue' ? (
-        <div style={{ flex: 1, overflow: 'auto' }}>
+        <div className="flex-1 overflow-y-auto">
           <QueueBoard compact staffView />
         </div>
       ) : (
-        <div style={{ flex: 1, overflow: 'auto' }}>
+        <div className="flex-1 overflow-y-auto">
           {checkoutPatients.length === 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 40, color: 'var(--text-muted)', fontSize: 13, gap: 8 }}>
               <CheckCircle size={32} strokeWidth={1.5} style={{ color: 'var(--success)' }} />

@@ -11,7 +11,8 @@ import {
   Menu,
   X,
   User,
-  Stethoscope
+  Stethoscope,
+  UserPlus
 } from 'lucide-react'
 import { setStaffMode, setActiveView } from '../../store/slices/appSlice'
 import { fetchTodayQueue } from '../../store/slices/queueSlice'
@@ -22,6 +23,11 @@ import InventoryPage from '../inventory/InventoryPage'
 import FinancialLedger from '../finance/FinancialLedger'
 import DailyReport from '../finance/DailyReport'
 import PatientHistoryPage from '../patient/PatientHistoryPage'
+import PatientSearch from '../patient/PatientSearch'
+import { useLocation } from 'react-router-dom'
+import PatientRegistrationModal from '../patient/PatientRegistrationModal'
+import QueueBoard from '../queue/QueueBoard'
+import StaffPanel from './StaffPanel'
 import { format } from 'date-fns'
 import { StaffIcon, DoctorIcon } from '../common/ProfileIcons'
 
@@ -46,6 +52,11 @@ export default function AppShell() {
   const [now, setNow] = useState(new Date())
   const [lowStockCount, setLowStockCount] = useState(0)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showRegModal, setShowRegModal] = useState(false)
+  const location = useLocation()
+  const hideSidebarViews = ['patients', 'inventory', 'finance', 'report']
+  const hideSidebarRoutes = ['/patients', '/inventory', '/finance', '/daily-report', '/report']
+  const shouldHideSidebar = hideSidebarViews.includes(activeView) || hideSidebarRoutes.some(route => location.pathname.includes(route))
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000)
@@ -77,7 +88,7 @@ export default function AppShell() {
   return (
     <div className="w-full h-screen flex flex-col overflow-hidden bg-white">
       {/* TOP NAV BAR */}
-      <header className={`w-full shrink-0 border-b border-slate-200 flex items-center justify-between px-6 bg-white z-50 rounded-none transition-all duration-200 gap-8 ${isStaffMode ? 'h-[72px]' : 'h-14'}`}>
+      <header className="w-full h-[72px] shrink-0 border-b border-slate-200 flex items-center justify-between px-6 bg-white z-50 rounded-none gap-8">
         {/* Logo + Name */}
         <div className="flex items-center gap-3 shrink-0 min-w-max">
           <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-teal-50 border border-teal-100 text-teal-600 shrink-0">
@@ -100,7 +111,7 @@ export default function AppShell() {
               key={id}
               onClick={() => { dispatch(setActiveView(id)); setMobileMenuOpen(false) }}
               className={`
-                flex items-center gap-2 text-slate-600 hover:text-teal-600 transition-colors duration-200
+                flex items-center gap-2 text-slate-600 hover:text-teal-600 transition-colors duration-200 cursor-pointer
                 ${activeView === id 
                   ? 'text-teal-700 font-semibold' 
                   : 'font-medium'
@@ -114,14 +125,14 @@ export default function AppShell() {
         </nav>
 
         {/* Right Controls */}
-        <div className="flex items-center gap-5 shrink-0">
+        <div className="flex items-center gap-5 shrink-0 relative">
           {/* Low Stock Alert */}
           {lowStockCount > 0 && (
             <button
               type="button"
               title={`${lowStockCount} items low on stock`}
               onClick={() => dispatch(setActiveView('inventory'))}
-              className="relative p-1.5 text-slate-400 hover:text-teal-600 rounded-lg hover:bg-slate-50 transition-colors"
+              className="relative p-1.5 text-slate-400 hover:text-teal-600 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
             >
               <Bell size={20} strokeWidth={1.5} />
               <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full" />
@@ -138,59 +149,74 @@ export default function AppShell() {
             </div>
           </div>
 
-          {/* Staff/Solo Toggle */}
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-semibold ${!isStaffMode ? 'text-teal-600' : 'text-slate-400'}`}>
-              SOLO
-            </span>
-            <button
-              type="button"
-              onClick={() => dispatch(setStaffMode(!isStaffMode))}
-              className={`
-                relative w-12 h-6 rounded-full border transition-colors duration-200 ease-in-out
-                ${isStaffMode ? 'bg-teal-600 border-teal-600' : 'bg-slate-100 border-slate-200'}
-              `}
-              title={isStaffMode ? 'Switch to Solo Mode' : 'Switch to Staff Mode'}
-            >
-              <span
-                className={`
-                  absolute top-0.5 w-[18px] h-[18px] rounded-full bg-white shadow-sm border border-slate-200/50
-                  transition-all duration-200 ease-in-out
-                  ${isStaffMode ? 'left-[26px]' : 'left-0.5'}
-                `}
-              />
-            </button>
-            <span className={`text-xs font-semibold ${isStaffMode ? 'text-teal-600' : 'text-slate-400'}`}>
-              STAFF
-            </span>
-          </div>
-
           {/* Divider */}
           <div className="h-6 w-px bg-slate-200" />
 
-          {/* Mode Badge */}
-          {isStaffMode ? (
-            <StaffIcon size={20} className="!p-2 !rounded-xl" />
-          ) : (
-            <DoctorIcon size={20} className="!p-2 !rounded-xl" />
-          )}
+          {/* Clickable Role Icon Toggle */}
+          <button
+            type="button"
+            onClick={() => dispatch(setStaffMode(!isStaffMode))}
+            className="p-1 hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-center shrink-0"
+            title={isStaffMode ? "Switch to Solo Mode (Doctor view)" : "Switch to Staff Mode (Shared desk)"}
+          >
+            {isStaffMode ? (
+              <StaffIcon size={20} className="!p-2 !rounded-xl" />
+            ) : (
+              <DoctorIcon size={20} className="!p-2 !rounded-xl" />
+            )}
+          </button>
 
           {/* Logout */}
           <button
             type="button"
             onClick={handleLogout}
             title="End session"
-            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-slate-50 rounded-lg transition-all"
+            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-slate-50 rounded-lg transition-all cursor-pointer"
           >
             <LogOut size={20} strokeWidth={1.5} />
           </button>
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
-      <main className="flex-1 w-full overflow-hidden flex flex-col bg-slate-50">
-        {renderContent()}
-      </main>
+      {/* BOTTOM CONTAINER */}
+      <div className="flex-1 w-full overflow-hidden flex bg-slate-50">
+        {/* Left Sidebar */}
+        {!shouldHideSidebar && (
+          <aside className="w-[320px] shrink-0 border-r border-slate-200 bg-slate-50/50 flex flex-col h-full overflow-hidden">
+            {isStaffMode ? (
+              <StaffPanel />
+            ) : (
+              <div className="p-4 flex flex-col gap-4 h-full overflow-hidden">
+                {/* Search & Register Patient 2-Column Row */}
+                <div className="flex items-center gap-2 w-full shrink-0">
+                  <div className="flex-1 min-w-0">
+                    <PatientSearch />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowRegModal(true)}
+                    className="flex items-center justify-center shrink-0 w-10 h-10 bg-teal-50 text-teal-700 border border-teal-200 rounded-lg hover:bg-teal-100 transition-colors cursor-pointer"
+                    title="Register New Patient"
+                  >
+                    <UserPlus size={20} strokeWidth={1.5} />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto">
+                  <QueueBoard compact />
+                </div>
+              </div>
+            )}
+          </aside>
+        )}
+
+        {/* Main Workspace (Canvas) */}
+        <main className="flex-1 bg-white overflow-y-auto">
+          {renderContent()}
+        </main>
+      </div>
+
+      {showRegModal && <PatientRegistrationModal onClose={() => setShowRegModal(false)} />}
     </div>
   )
 }

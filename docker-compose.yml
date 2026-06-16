@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: clinic-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: sudha_clinic
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - clinic-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sudha_clinic"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: clinic-backend
+    ports:
+      - "8081:8081"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/sudha_clinic
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - CLINIC_PIN=1234
+      - CLINIC_XRAY_UPLOAD_DIR=/app/uploads/xrays
+      - META_WHATSAPP_BASE_URL=https://graph.facebook.com/v19.0
+      - META_WHATSAPP_PHONE_NUMBER_ID=YOUR_PHONE_NUMBER_ID
+      - META_WHATSAPP_ACCESS_TOKEN=YOUR_ACCESS_TOKEN
+      - META_WHATSAPP_TEMPLATE_NAME=appointment_reminder
+      - META_WHATSAPP_TEMPLATE_LANGUAGE=en_US
+    volumes:
+      - clinic-uploads:/app/uploads
+    networks:
+      - clinic-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: clinic-frontend
+    ports:
+      - "5174:5174"
+    depends_on:
+      - backend
+    networks:
+      - clinic-network
+
+volumes:
+  postgres_data:
+  clinic-uploads:
+
+networks:
+  clinic-network:
+    driver: bridge

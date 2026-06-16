@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import { Search, User, Calendar, Phone, MapPin, Activity, Image, FileText, X, ChevronDown, ChevronUp, Upload, Trash2, ZoomIn, FileSpreadsheet, ClipboardList, Users, Pill } from 'lucide-react'
+import { Search, User, Calendar, Phone, MapPin, Activity, Image, FileText, X, ChevronDown, ChevronUp, Upload, Trash2, ZoomIn, FileSpreadsheet, ClipboardList, Users, Pill, UserPlus } from 'lucide-react'
 import { searchPatients, getVisitHistory } from '../../api/patients'
+import PatientRegistrationModal from './PatientRegistrationModal'
 import { getPatientXrays, uploadXray, deleteXray, getXrayFileUrl } from '../../api/misc'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -18,6 +19,7 @@ export default function PatientHistoryPage() {
   const [patients, setPatients] = useState([])
   const [loadingList, setLoadingList] = useState(false)
   const [selectedPat, setSelectedPat] = useState(null)
+  const [showRegModal, setShowRegModal] = useState(false)
   
   // Selected patient details
   const [visits, setVisits] = useState([])
@@ -218,19 +220,29 @@ export default function PatientHistoryPage() {
             <Users size={16} />
             <span>Patient Directory</span>
           </h3>
-          <div style={{ position: 'relative' }}>
-            <Search size={16} style={{
-              position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
-              color: 'var(--text-muted)', pointerEvents: 'none'
-            }} />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Search by name or phone..."
-              className="input-field"
-              style={{ paddingLeft: 38, width: '100%', boxSizing: 'border-box' }}
-            />
+          <div className="flex items-center gap-2 w-full mb-4">
+            <div className="relative flex-1">
+              <Search size={16} style={{
+                position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+                color: 'var(--text-muted)', pointerEvents: 'none'
+              }} />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="Search by name or phone..."
+                className="input-field"
+                style={{ paddingLeft: 38, width: '100%', boxSizing: 'border-box' }}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowRegModal(true)}
+              title="Register New Patient"
+              className="flex items-center justify-center shrink-0 w-10 h-10 bg-teal-50 text-teal-700 border border-teal-200 rounded-lg hover:bg-teal-100 transition-colors cursor-pointer"
+            >
+              <UserPlus size={20} strokeWidth={1.5} />
+            </button>
           </div>
         </div>
 
@@ -726,6 +738,15 @@ export default function PatientHistoryPage() {
             Uploaded: {lightbox.uploadedAt ? format(new Date(lightbox.uploadedAt), 'dd MMM yyyy, hh:mm aa') : ''} · Click outside to close
           </div>
         </div>
+      )}
+
+      {showRegModal && (
+        <PatientRegistrationModal 
+          onClose={() => {
+            setShowRegModal(false)
+            loadPatients(query)
+          }} 
+        />
       )}
 
       <style>{`

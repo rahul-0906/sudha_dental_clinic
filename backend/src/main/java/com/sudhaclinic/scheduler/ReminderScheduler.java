@@ -2,9 +2,9 @@ package com.sudhaclinic.scheduler;
 
 import com.sudhaclinic.entity.Visit;
 import com.sudhaclinic.repository.VisitRepository;
+import com.sudhaclinic.service.WhatsAppNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,21 +18,6 @@ import java.util.List;
 /**
  * Scheduled task that runs daily at 18:00 to send WhatsApp reminders
  * to patients whose next appointment is tomorrow.
- *
- * TO ENABLE TWILIO:
- * 1. Add to pom.xml:
- *    <dependency>
- *      <groupId>com.twilio.sdk</groupId>
- *      <artifactId>twilio</artifactId>
- *      <version>9.14.0</version>
- *    </dependency>
- *
- * 2. Add to application.properties:
- *    twilio.account-sid=YOUR_ACCOUNT_SID
- *    twilio.auth-token=YOUR_AUTH_TOKEN
- *    twilio.whatsapp-from=whatsapp:+14155238886
- *
- * 3. Uncomment the Twilio code block in sendWhatsAppReminder() below.
  */
 @Slf4j
 @Component
@@ -42,15 +27,7 @@ import java.util.List;
 public class ReminderScheduler {
 
     private final VisitRepository visitRepository;
-
-    @Value("${twilio.account-sid:NOT_CONFIGURED}")
-    private String twilioAccountSid;
-
-    @Value("${twilio.auth-token:NOT_CONFIGURED}")
-    private String twilioAuthToken;
-
-    @Value("${twilio.whatsapp-from:whatsapp:+14155238886}")
-    private String twilioFrom;
+    private final WhatsAppNotificationService whatsappNotificationService;
 
     /**
      * Runs every day at 18:00 (6 PM) to send appointment reminders.
@@ -88,33 +65,19 @@ public class ReminderScheduler {
         String phone = visit.getPatient().getPhone();
         String formattedDate = appointmentDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy"));
 
-        String messageBody = String.format(
-            "🦷 Dear %s,\n\n" +
-            "This is a friendly reminder from *Sudha Dental Clinic, Sankarankovil*.\n\n" +
-            "Your dental appointment with *Dr. Mariyappan* is scheduled for *tomorrow, %s*.\n\n" +
-            "Please arrive 10 minutes early. If you need to reschedule, please call us.\n\n" +
-            "📍 Sankarankovil\n" +
-            "Reply STOP to opt out of reminders.",
-            patientName, formattedDate
-        );
-
         // Log the payload (always, for audit trail)
         log.info("[WHATSAPP REMINDER] ----------------------------------------");
-        log.info("[WHATSAPP REMINDER] To      : whatsapp:+91{}", phone);
-        log.info("[WHATSAPP REMINDER] From    : {}", twilioFrom);
+        log.info("[WHATSAPP REMINDER] To      : {}", phone);
         log.info("[WHATSAPP REMINDER] Patient : {}", patientName);
         log.info("[WHATSAPP REMINDER] Date    : {}", formattedDate);
-        log.info("[WHATSAPP REMINDER] Message :\n{}", messageBody);
+        log.info("[WHATSAPP REMINDER] Sending reminder via Meta Cloud API...");
         log.info("[WHATSAPP REMINDER] ----------------------------------------");
 
-        // ── TWILIO INTEGRATION (uncomment when credentials are configured) ──
-        // Twilio.init(twilioAccountSid, twilioAuthToken);
-        // Message message = Message.creator(
-        //     new PhoneNumber("whatsapp:+91" + phone),
-        //     new PhoneNumber(twilioFrom),
-        //     messageBody
-        // ).create();
-        // log.info("[WHATSAPP REMINDER] Sent! SID: {}", message.getSid());
-        // ────────────────────────────────────────────────────────────────────
+        boolean success = whatsappNotificationService.sendTemplateReminder(phone, patientName, formattedDate);
+        if (success) {
+            log.info("[WHATSAPP REMINDER] Meta notification sent successfully for {}.", patientName);
+        } else {
+            log.warn("[WHATSAPP REMINDER] Meta notification failed or fell back to mock for {}.", patientName);
+        }
     }
 }
