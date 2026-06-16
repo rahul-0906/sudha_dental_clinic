@@ -123,39 +123,40 @@ export default function FinancialLedger() {
       {loading ? (
         <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>Loading transactions...</div>
       ) : (
-        <div style={{ width: '100%', background: 'var(--surface)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: 'var(--bg-700)', borderBottom: '1px solid var(--border)' }}>
+        <div className="w-full overflow-x-auto bg-white border border-slate-200 rounded-xl shadow-sm">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
                 {['Date', 'Type', 'Category', 'Description', 'Amount'].map(h => (
-                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)' }}>{h}</th>
+                  <th key={h} className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {transactions.length === 0 && (
-                <tr><td colSpan={5} style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
-                  No transactions for this period
-                </td></tr>
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500 text-sm">
+                    No transactions for this period
+                  </td>
+                </tr>
               )}
               {transactions.map(t => (
-                <tr key={t.id} style={{ borderBottom: '1px solid var(--border)', transition: 'var(--transition)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--surface-hover)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
-                  <td style={{ padding: '10px 14px', color: 'var(--text-muted)', fontSize: 12 }}>
+                <tr key={t.id} className="hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-none">
+                  <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
                     {t.transactionDate ? format(new Date(t.transactionDate), 'dd MMM yyyy') : '-'}
                   </td>
-                  <td style={{ padding: '10px 14px' }}>
-                    <span style={{
-                      fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 8,
-                      background: t.type === 'INCOME' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-                      border: `1px solid ${t.type === 'INCOME' ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`,
-                      color: t.type === 'INCOME' ? '#34D399' : '#FC8181',
-                    }}>{t.type}</span>
+                  <td className="px-6 py-4 text-sm whitespace-nowrap">
+                    <span className={t.type === 'INCOME' ? 'text-teal-600 font-medium' : 'text-red-600 font-medium'}>
+                      {t.type}
+                    </span>
                   </td>
-                  <td style={{ padding: '10px 14px', color: 'var(--text-secondary)', fontSize: 13 }}>{t.category || '-'}</td>
-                  <td style={{ padding: '10px 14px', color: 'var(--text-primary)', fontSize: 13 }}>{t.description || '-'}</td>
-                  <td style={{ padding: '10px 14px', fontWeight: 700, fontSize: 14, color: t.type === 'INCOME' ? '#34D399' : '#FC8181', textAlign: 'right' }}>
+                  <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">{t.category || '-'}</td>
+                  <td className="px-6 py-4 text-sm text-slate-900 whitespace-nowrap max-w-xs truncate" title={t.description}>
+                    {t.description || '-'}
+                  </td>
+                  <td className={`px-6 py-4 text-sm font-semibold whitespace-nowrap text-right ${
+                    t.type === 'INCOME' ? 'text-teal-600' : 'text-red-600'
+                  }`}>
                     {t.type === 'INCOME' ? '+' : '-'}₹{parseFloat(t.amount).toLocaleString('en-IN')}
                   </td>
                 </tr>

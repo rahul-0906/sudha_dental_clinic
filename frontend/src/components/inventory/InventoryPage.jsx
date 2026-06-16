@@ -173,61 +173,57 @@ export default function InventoryPage() {
       {loading ? (
         <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>Loading inventory...</div>
       ) : (
-        <div style={{ width: '100%', background: 'var(--surface)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ background: 'var(--bg-700)', borderBottom: '1px solid var(--border)' }}>
+        <div className="w-full overflow-x-auto bg-white border border-slate-200 rounded-xl shadow-sm">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
                 {['Medicine', 'Category', 'Unit', 'Stock', 'Reorder', 'Cost ₹', 'Selling ₹', 'Actions'].map(h => (
-                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{h}</th>
+                  <th key={h} className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={8} style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
-                  <Package size={32} style={{ display: 'block', margin: '0 auto 12px', opacity: 0.3 }} />
-                  No medicines found
-                </td></tr>
+                <tr>
+                  <td colSpan={8} className="px-6 py-12 text-center text-slate-500 text-sm">
+                    <Package size={32} className="mx-auto mb-3 opacity-30 text-slate-400" />
+                    No medicines found
+                  </td>
+                </tr>
               )}
               {filtered.map(med => {
                 const low = med.currentStock <= med.reorderLevel
                 return (
-                  <tr key={med.id} style={{ borderBottom: '1px solid var(--border)', transition: 'var(--transition)' }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--surface-hover)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                  >
-                    <td style={{ padding: '10px 14px', fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{med.name}</td>
-                    <td style={{ padding: '10px 14px' }}>
-                      <span style={{
-                        fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 8,
-                        background: med.category === 'DENTAL' ? 'rgba(13,148,136,0.1)' : 'rgba(59,130,246,0.1)',
-                        color: med.category === 'DENTAL' ? 'var(--primary-light)' : '#93C5FD',
-                        border: `1px solid ${med.category === 'DENTAL' ? 'var(--border-bright)' : 'rgba(59,130,246,0.3)'}`,
-                      }}>{med.category}</span>
+                  <tr key={med.id} className="hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-none">
+                    <td className="px-6 py-4 text-sm font-semibold text-slate-900 whitespace-nowrap">{med.name}</td>
+                    <td className="px-6 py-4 text-sm whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                        med.category === 'DENTAL' 
+                          ? 'bg-teal-50 text-teal-700 border border-teal-200' 
+                          : 'bg-blue-50 text-blue-700 border border-blue-200'
+                      }`}>
+                        {med.category}
+                      </span>
                     </td>
-                    <td style={{ padding: '10px 14px', color: 'var(--text-muted)', fontSize: 13 }}>{med.unit}</td>
-                    <td style={{ padding: '10px 14px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontWeight: 700, color: getStockColor(med), fontSize: 13 }}>{med.currentStock}</span>
-                        <div style={{ flex: 1, height: 4, background: 'var(--bg-700)', borderRadius: 2, minWidth: 50 }}>
-                          <div style={{
-                            height: '100%', borderRadius: 2,
-                            width: `${Math.min(100, (med.currentStock / Math.max(med.reorderLevel * 3, 1)) * 100)}%`,
-                            background: getStockColor(med), transition: 'width 0.3s',
-                          }} />
-                        </div>
-                        {low && <AlertTriangle size={12} color="var(--warning)" />}
-                      </div>
+                    <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">{med.unit}</td>
+                    <td className="px-6 py-4 text-sm whitespace-nowrap">
+                      <span className={low
+                        ? "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200"
+                        : "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-50 text-teal-700 border border-teal-200"
+                      }>
+                        {med.currentStock} {med.unit}
+                      </span>
                     </td>
-                    <td style={{ padding: '10px 14px', color: 'var(--text-muted)', fontSize: 13 }}>{med.reorderLevel}</td>
-                    <td style={{ padding: '10px 14px', color: 'var(--text-muted)', fontSize: 13 }}>₹{med.unitCostPrice}</td>
-                    <td style={{ padding: '10px 14px', color: 'var(--primary-light)', fontWeight: 600, fontSize: 13 }}>₹{med.unitSellingPrice}</td>
-                    <td style={{ padding: '10px 14px' }}>
-                      <button onClick={() => { setModalMed(med); setShowModal(true) }}
-                        style={{ background: 'none', border: '1px solid var(--border)', padding: '4px 10px', borderRadius: 'var(--radius-sm)', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}
-                        onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--primary-light)'; e.currentTarget.style.borderColor = 'var(--primary)' }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}>
-                        <Edit2 size={12} /> Edit
+                    <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">{med.reorderLevel}</td>
+                    <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">₹{med.unitCostPrice}</td>
+                    <td className="px-6 py-4 text-sm font-semibold text-teal-600 whitespace-nowrap">₹{med.unitSellingPrice}</td>
+                    <td className="px-6 py-4 text-sm whitespace-nowrap">
+                      <button 
+                        onClick={() => { setModalMed(med); setShowModal(true) }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:text-teal-600 hover:border-teal-300 hover:bg-teal-50/50 transition-colors cursor-pointer"
+                      >
+                        <Edit2 size={12} />
+                        <span>Edit</span>
                       </button>
                     </td>
                   </tr>
