@@ -36,25 +36,25 @@ export default function StaffPanel() {
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center w-full bg-slate-100 p-1 rounded-lg gap-1">
+        <div className="flex items-center w-full bg-slate-200/60 p-1 rounded-lg gap-1">
           {['queue', 'checkout'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={activeTab === tab 
-                ? 'flex-1 py-1.5 flex items-center justify-center gap-2 bg-white text-teal-700 shadow-sm rounded-md text-sm font-semibold whitespace-nowrap transition-all cursor-pointer'
-                : 'flex-1 py-1.5 flex items-center justify-center gap-2 text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 rounded-md text-sm font-semibold whitespace-nowrap transition-all cursor-pointer'
+                ? 'flex-1 py-1.5 px-2 flex items-center justify-center gap-1.5 bg-white text-teal-700 shadow-sm rounded-md text-xs font-semibold tracking-tight whitespace-nowrap transition-all min-w-0'
+                : 'flex-1 py-1.5 px-2 flex items-center justify-center gap-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 rounded-md text-xs font-medium tracking-tight whitespace-nowrap transition-all cursor-pointer min-w-0'
               }
             >
               {tab === 'queue' ? (
                 <>
-                  <ListOrdered size={14} />
-                  <span>Queue ({queue.filter(v => v.status !== 'DONE').length})</span>
+                  <ListOrdered size={14} strokeWidth={1.5} className="shrink-0" />
+                  <span className="whitespace-nowrap overflow-hidden text-ellipsis">Queue ({queue.filter(v => v.status !== 'DONE').length})</span>
                 </>
               ) : (
                 <>
-                  <CreditCard size={14} />
-                  <span>Checkout ({checkoutPatients.length})</span>
+                  <CreditCard size={14} strokeWidth={1.5} className="shrink-0" />
+                  <span className="whitespace-nowrap overflow-hidden text-ellipsis">Checkout ({checkoutPatients.length})</span>
                 </>
               )}
             </button>
