@@ -162,7 +162,7 @@ export default function PatientRegistrationModal({ onClose }) {
       className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-100 p-6 transition-all">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-100 p-6 transition-all">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -179,101 +179,100 @@ export default function PatientRegistrationModal({ onClose }) {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Name */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Full Name *
-            </label>
-            <input 
-              className="input-field" 
-              type="text" 
-              placeholder="Patient's full name"
-              value={form.name} 
-              onChange={(e) => setForm({ ...form, name: e.target.value })} 
-            />
-            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
-          </div>
-
-          {/* Phone */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Phone Number * (10 digits)
-            </label>
-            <input 
-              className="input-field" 
-              type="tel" 
-              placeholder="9876543210"
-              value={form.phone} 
-              onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, '') })}
-              maxLength={10} 
-            />
-            {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
-          </div>
-
-          {/* DOB + Age Grid */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+            {/* Row 1: Name & Phone */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Date of Birth
+                Full Name *
               </label>
               <input 
-                className="input-field" 
+                className="input-field w-full" 
                 type="text" 
-                placeholder="DD/MM/YYYY"
-                maxLength={10}
-                value={form.dob} 
-                onChange={(e) => handleDobChange(e.target.value)} 
+                placeholder="Patient's full name"
+                value={form.name} 
+                onChange={(e) => setForm({ ...form, name: e.target.value })} 
               />
-              {errors.dob && <p className="text-xs text-red-500 mt-1">{errors.dob}</p>}
+              {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
             </div>
+
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Age
+                Phone Number * (10 digits)
               </label>
               <input 
-                className="input-field" 
-                type="text" 
-                placeholder="Years"
-                value={form.age} 
-                onChange={(e) => handleAgeChange(e.target.value)} 
+                className="input-field w-full" 
+                type="tel" 
+                placeholder="9876543210"
+                value={form.phone} 
+                onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/\D/g, '') })}
+                maxLength={10} 
+              />
+              {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
+            </div>
+
+            {/* Row 2: DOB & Age, Gender */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Date of Birth & Age
+              </label>
+              <div className="grid grid-cols-[2fr_1fr] gap-3">
+                <div>
+                  <input 
+                    className="input-field w-full" 
+                    type="text" 
+                    placeholder="DD/MM/YYYY"
+                    maxLength={10}
+                    value={form.dob} 
+                    onChange={(e) => handleDobChange(e.target.value)} 
+                  />
+                  {errors.dob && <p className="text-xs text-red-500 mt-1">{errors.dob}</p>}
+                </div>
+                <div>
+                  <input 
+                    className="input-field w-full" 
+                    type="text" 
+                    placeholder="Age"
+                    value={form.age} 
+                    onChange={(e) => handleAgeChange(e.target.value)} 
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Gender
+              </label>
+              <div className="flex items-center gap-2 w-full h-10">
+                {['Male', 'Female', 'Other'].map(g => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setForm({ ...form, gender: g })}
+                    className={form.gender === g
+                      ? 'flex-1 flex items-center justify-center h-full rounded-lg border border-teal-600 bg-teal-50 text-teal-700 font-medium text-sm transition-colors cursor-pointer'
+                      : 'flex-1 flex items-center justify-center h-full rounded-lg border border-slate-200 bg-white text-slate-600 text-sm cursor-pointer hover:bg-slate-50 transition-colors'
+                    }
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Row 3: Address */}
+            <div className="flex flex-col gap-1.5 col-span-2">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Address
+              </label>
+              <textarea 
+                className="input-field resize-y min-h-[64px] w-full" 
+                placeholder="Patient address..."
+                value={form.address} 
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                rows={2} 
               />
             </div>
-          </div>
-
-          {/* Gender */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Gender
-            </label>
-            <div className="flex items-center gap-3 w-full">
-              {['Male', 'Female', 'Other'].map(g => (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => setForm({ ...form, gender: g })}
-                  className={form.gender === g
-                    ? 'flex-1 py-2 text-center rounded-lg border border-teal-200 bg-teal-50 text-teal-700 text-sm font-medium cursor-pointer transition-colors'
-                    : 'flex-1 py-2 text-center rounded-lg border border-slate-200 text-slate-600 text-sm cursor-pointer hover:bg-slate-50 transition-colors'
-                  }
-                >
-                  {g}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Address */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Address
-            </label>
-            <textarea 
-              className="input-field resize-y min-h-[80px]" 
-              placeholder="Patient address..."
-              value={form.address} 
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
-              rows={2} 
-            />
           </div>
 
           {/* Add to Queue toggle */}
@@ -290,7 +289,7 @@ export default function PatientRegistrationModal({ onClose }) {
           </label>
 
           {/* Buttons */}
-          <div className="flex items-center justify-end gap-3 mt-4 border-t border-slate-100 pt-4">
+          <div className="flex items-center justify-end gap-3 mt-6 border-t border-slate-100 pt-4">
             <button 
               type="button" 
               onClick={onClose} 
