@@ -56,4 +56,18 @@ public class Medication {
     @Column(nullable = false)
     @Builder.Default
     private boolean isActive = true;
+
+    /**
+     * Delegate getter for available stock (alias for currentStock).
+     */
+    public Integer getAvailableStock() {
+        return this.currentStock;
+    }
+
+    /**
+     * Delegate setter for available stock (alias for currentStock).
+     */
+    public void setAvailableStock(Integer availableStock) {
+        this.currentStock = availableStock;
+    }
 }
