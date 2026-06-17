@@ -244,18 +244,26 @@ export default function PatientRegistrationModal({ onClose }) {
                 Gender
               </label>
               <div className="flex items-center gap-2 w-full h-10">
-                {['Male', 'Female', 'Other'].map(g => (
-                  <button
-                    key={g}
-                    type="button"
-                    onClick={() => setForm({ ...form, gender: g })}
-                    className={form.gender === g
-                      ? 'flex-1 flex items-center justify-center h-full rounded-lg border border-teal-600 bg-teal-50 text-teal-700 font-medium text-sm transition-colors cursor-pointer'
-                      : 'flex-1 flex items-center justify-center h-full rounded-lg border border-slate-200 bg-white text-slate-600 text-sm cursor-pointer hover:bg-slate-50 transition-colors'
-                    }
-                  >
-                    {g}
-                  </button>
+                {['Male', 'Female', 'Other'].map((option) => (
+                  <label key={option} className="flex-1 h-full cursor-pointer relative">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value={option}
+                      checked={form.gender === option}
+                      onChange={(e) => setForm({ ...form, gender: e.target.value })}
+                      className="sr-only"
+                    />
+                    <div 
+                      className={`flex items-center justify-center h-full w-full rounded-lg border text-sm select-none transition-colors ${
+                        form.gender === option
+                          ? 'border-teal-600 bg-teal-50 text-teal-700 font-medium shadow-sm'
+                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      {option}
+                    </div>
+                  </label>
                 ))}
               </div>
             </div>
