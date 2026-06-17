@@ -752,17 +752,17 @@ export default function PatientHistoryPage() {
       <style>{`
         .input-field {
           height: 38px;
-          background: var(--bg-900);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-sm);
-          color: var(--text-primary);
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          color: #1e293b;
           padding: 0 12px;
           outline: none;
-          transition: var(--transition);
+          transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
         }
         .input-field:focus {
-          border-color: var(--primary);
-          box-shadow: 0 0 0 2px var(--primary-glow);
+          border-color: #0d9488;
+          box-shadow: 0 0 0 1px #0d9488;
         }
       `}</style>
     </div>
