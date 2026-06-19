@@ -3,19 +3,15 @@ import { useDispatch, useSelector } from 'react-redux'
 import { X, Check, UserPlus } from 'lucide-react'
 import { registerPatient } from '../../api/patients'
 import { setSelectedPatient } from '../../store/slices/patientSlice'
-import { addToQueue, updateVisitStatus } from '../../api/visits'
-import { fetchTodayQueue } from '../../store/slices/queueSlice'
 import toast from 'react-hot-toast'
 
 export default function PatientRegistrationModal({ onClose }) {
   const dispatch = useDispatch()
-  const isStaffMode = useSelector((state) => state.app.isStaffAvailable)
   const [form, setForm] = useState({
     name: '', phone: '', dob: '', age: '', gender: '', address: ''
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
-  const [addQueue, setAddQueue] = useState(true)
 
   const calculateAge = (dobString) => {
     if (!dobString || dobString.length !== 10) return ''
@@ -127,23 +123,7 @@ export default function PatientRegistrationModal({ onClose }) {
       })
       const patient = res.data
       dispatch(setSelectedPatient(patient))
-
-      if (addQueue) {
-        try {
-          const queueRes = await addToQueue(patient.id)
-          if (!isStaffMode) {
-            const newVisit = queueRes.data
-            await updateVisitStatus(newVisit.id, 'CONSULTATION')
-          }
-          dispatch(fetchTodayQueue())
-          toast.success(isStaffMode ? `${patient.name} registered & added to queue!` : `${patient.name} registered & consult started!`)
-        } catch {
-          toast.success(`${patient.name} registered successfully!`)
-        }
-      } else {
-        toast.success(`${patient.name} registered!`)
-      }
-
+      toast.success(`${patient.name} registered successfully!`)
       onClose()
     } catch (err) {
       const msg = err.response?.data?.message || 'Registration failed'
@@ -283,18 +263,7 @@ export default function PatientRegistrationModal({ onClose }) {
             </div>
           </div>
 
-          {/* Add to Queue toggle */}
-          <label className="flex items-center gap-2.5 cursor-pointer mt-1">
-            <input 
-              type="checkbox" 
-              checked={addQueue} 
-              onChange={(e) => setAddQueue(e.target.checked)}
-              className="accent-teal-600 w-4 h-4 rounded border-slate-300 focus:ring-teal-500" 
-            />
-            <span className="text-sm text-slate-600 font-medium">
-              Add to today's queue immediately
-            </span>
-          </label>
+
 
           {/* Buttons */}
           <div className="flex items-center justify-end gap-3 mt-6 border-t border-slate-100 pt-4">
@@ -313,7 +282,7 @@ export default function PatientRegistrationModal({ onClose }) {
               {loading ? 'Registering...' : (
                 <>
                   <Check size={16} strokeWidth={1.5} />
-                  <span>{addQueue ? 'Register & Add to Queue' : 'Register Patient'}</span>
+                  <span>Register Patient</span>
                 </>
               )}
             </button>

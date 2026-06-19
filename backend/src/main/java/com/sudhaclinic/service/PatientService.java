@@ -1,20 +1,14 @@
 package com.sudhaclinic.service;
 
 import com.sudhaclinic.dto.PatientDTO;
-import com.sudhaclinic.dto.PrescriptionDTO;
-import com.sudhaclinic.dto.VisitDTO;
 import com.sudhaclinic.entity.Patient;
-import com.sudhaclinic.entity.Prescription;
-import com.sudhaclinic.entity.Visit;
 import com.sudhaclinic.repository.PatientRepository;
-import com.sudhaclinic.repository.PrescriptionRepository;
-import com.sudhaclinic.repository.VisitRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,8 +18,7 @@ import java.util.stream.Collectors;
 public class PatientService {
 
     private final PatientRepository patientRepository;
-    private final VisitRepository visitRepository;
-    private final PrescriptionRepository prescriptionRepository;
+
 
     /**
      * Search patients by name or phone number (case-insensitive partial match).
@@ -74,26 +67,7 @@ public class PatientService {
         return toDTO(patient);
     }
 
-    /**
-     * Fetch the complete visit history for a patient, including prescriptions for each visit.
-     */
-    @Transactional(readOnly = true)
-    public List<VisitDTO> getVisitHistory(Long patientId) {
-        log.debug("Fetching visit history for patient ID: {}", patientId);
 
-        // Ensure patient exists
-        patientRepository.findById(patientId)
-                .orElseThrow(() -> new IllegalArgumentException("Patient not found with ID: " + patientId));
-
-        List<Visit> visits = visitRepository.findByPatientIdOrderByVisitDateDesc(patientId);
-
-        return visits.stream()
-                .map(visit -> {
-                    List<Prescription> prescriptions = prescriptionRepository.findByVisitId(visit.getId());
-                    return toVisitDTO(visit, prescriptions);
-                })
-                .collect(Collectors.toList());
-    }
 
     // ===================== Mapping helpers =====================
 
@@ -109,39 +83,5 @@ public class PatientService {
                 .build();
     }
 
-    private VisitDTO toVisitDTO(Visit visit, List<Prescription> prescriptions) {
-        List<PrescriptionDTO> prescriptionDTOs = prescriptions.stream()
-                .map(this::toPrescriptionDTO)
-                .collect(Collectors.toList());
 
-        return VisitDTO.builder()
-                .id(visit.getId())
-                .patientId(visit.getPatient().getId())
-                .patientName(visit.getPatient().getName())
-                .patientPhone(visit.getPatient().getPhone())
-                .visitDate(visit.getVisitDate())
-                .symptoms(visit.getSymptoms())
-                .consultationNotes(visit.getConsultationNotes())
-                .diagnosis(visit.getDiagnosis())
-                .consultationFee(visit.getConsultationFee())
-                .nextVisitDate(visit.getNextVisitDate())
-                .status(visit.getStatus())
-                .createdAt(visit.getCreatedAt())
-                .prescriptions(prescriptionDTOs)
-                .build();
-    }
-
-    private PrescriptionDTO toPrescriptionDTO(Prescription p) {
-        BigDecimal lineTotal = p.getUnitPrice().multiply(
-                BigDecimal.valueOf(p.getQuantityDispensed()));
-        return PrescriptionDTO.builder()
-                .id(p.getId())
-                .medicationId(p.getMedication().getId())
-                .medicationName(p.getMedication().getName())
-                .unit(p.getMedication().getUnit())
-                .quantityDispensed(p.getQuantityDispensed())
-                .unitPrice(p.getUnitPrice())
-                .lineTotal(lineTotal)
-                .build();
-    }
 }

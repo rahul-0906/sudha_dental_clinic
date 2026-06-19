@@ -23,10 +23,9 @@ public class XrayController {
     @PostMapping("/upload")
     public ResponseEntity<XrayImage> uploadXray(
             @RequestParam("patientId") Long patientId,
-            @RequestParam(value = "visitId", required = false) Long visitId,
             @RequestParam(value = "notes", required = false) String notes,
             @RequestParam("file") MultipartFile file) {
-        XrayImage image = xrayService.uploadXray(patientId, visitId, file, notes);
+        XrayImage image = xrayService.uploadXray(patientId, file, notes);
         return ResponseEntity.ok(image);
     }
 
@@ -35,10 +34,7 @@ public class XrayController {
         return ResponseEntity.ok(xrayService.getXraysByPatient(patientId));
     }
 
-    @GetMapping("/visit/{visitId}")
-    public ResponseEntity<List<XrayImage>> getVisitXrays(@PathVariable Long visitId) {
-        return ResponseEntity.ok(xrayService.getXraysByVisit(visitId));
-    }
+
 
     @GetMapping("/files/{fileName:.+}")
     public ResponseEntity<Resource> serveFile(@PathVariable String fileName) {

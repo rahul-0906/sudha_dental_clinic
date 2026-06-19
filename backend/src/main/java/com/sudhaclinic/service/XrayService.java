@@ -1,10 +1,8 @@
 package com.sudhaclinic.service;
 
 import com.sudhaclinic.entity.Patient;
-import com.sudhaclinic.entity.Visit;
 import com.sudhaclinic.entity.XrayImage;
 import com.sudhaclinic.repository.PatientRepository;
-import com.sudhaclinic.repository.VisitRepository;
 import com.sudhaclinic.repository.XrayImageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,15 +34,14 @@ public class XrayService {
 
     private final XrayImageRepository xrayImageRepository;
     private final PatientRepository patientRepository;
-    private final VisitRepository visitRepository;
 
     /**
      * Upload an X-ray image for a patient. Optionally linked to a visit.
      * Stores the file on the local filesystem and saves metadata to the database.
      */
     @Transactional
-    public XrayImage uploadXray(Long patientId, Long visitId, MultipartFile file, String notes) {
-        log.info("Uploading X-ray for patient {} (visitId={})", patientId, visitId);
+    public XrayImage uploadXray(Long patientId, MultipartFile file, String notes) {
+        log.info("Uploading X-ray for patient {}", patientId);
 
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new IllegalArgumentException("Patient not found with ID: " + patientId));
@@ -78,10 +75,7 @@ public class XrayService {
                 .notes(notes)
                 .build();
 
-        // Optionally link to a visit
-        if (visitId != null) {
-            visitRepository.findById(visitId).ifPresent(xrayImage::setVisit);
-        }
+
 
         XrayImage saved = xrayImageRepository.save(xrayImage);
         log.info("X-ray metadata saved with ID: {}", saved.getId());
@@ -98,13 +92,7 @@ public class XrayService {
         return xrayImageRepository.findByPatientId(patientId);
     }
 
-    /**
-     * Return all X-ray images for a given visit.
-     */
-    @Transactional(readOnly = true)
-    public List<XrayImage> getXraysByVisit(Long visitId) {
-        return xrayImageRepository.findByVisitId(visitId);
-    }
+
 
     /**
      * Delete an X-ray image by ID (removes both DB record and file).

@@ -44,12 +44,7 @@ public class Transaction {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
-    /**
-     * Optionally linked to a patient visit for income traceability.
-     */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "visit_id")
-    private Visit visit;
+
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

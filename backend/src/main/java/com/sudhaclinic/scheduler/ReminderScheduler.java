@@ -1,7 +1,7 @@
 package com.sudhaclinic.scheduler;
 
-import com.sudhaclinic.entity.Visit;
-import com.sudhaclinic.repository.VisitRepository;
+import com.sudhaclinic.entity.Appointment;
+import com.sudhaclinic.repository.AppointmentRepository;
 import com.sudhaclinic.service.WhatsAppNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ import java.util.List;
 @RequestMapping("/api/scheduler")
 public class ReminderScheduler {
 
-    private final VisitRepository visitRepository;
+    private final AppointmentRepository appointmentRepository;
     private final WhatsAppNotificationService whatsappNotificationService;
 
     /**
@@ -37,16 +37,16 @@ public class ReminderScheduler {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
         log.info("[REMINDER SCHEDULER] Running for date: {} (reminders for: {})", LocalDate.now(), tomorrow);
 
-        List<Visit> visits = visitRepository.findByNextVisitDate(tomorrow);
-        log.info("[REMINDER SCHEDULER] Found {} patients with appointments tomorrow.", visits.size());
+        List<Appointment> appointments = appointmentRepository.findByAppointmentDate(tomorrow);
+        log.info("[REMINDER SCHEDULER] Found {} appointments tomorrow.", appointments.size());
 
-        for (Visit visit : visits) {
-            if (visit.getPatient() != null && visit.getPatient().getPhone() != null) {
-                sendWhatsAppReminder(visit, tomorrow);
+        for (Appointment appt : appointments) {
+            if (appt.getPatient() != null && appt.getPatient().getPhone() != null) {
+                sendWhatsAppReminder(appt, tomorrow);
             }
         }
 
-        log.info("[REMINDER SCHEDULER] Completed processing {} reminders.", visits.size());
+        log.info("[REMINDER SCHEDULER] Completed processing {} reminders.", appointments.size());
     }
 
     /**
@@ -60,9 +60,9 @@ public class ReminderScheduler {
         return "Reminder scheduler triggered. Check application logs for output.";
     }
 
-    private void sendWhatsAppReminder(Visit visit, LocalDate appointmentDate) {
-        String patientName = visit.getPatient().getName();
-        String phone = visit.getPatient().getPhone();
+    private void sendWhatsAppReminder(Appointment appt, LocalDate appointmentDate) {
+        String patientName = appt.getPatient().getName();
+        String phone = appt.getPatient().getPhone();
         String formattedDate = appointmentDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy"));
 
         // Log the payload (always, for audit trail)

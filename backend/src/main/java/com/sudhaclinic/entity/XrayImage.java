@@ -26,9 +26,7 @@ public class XrayImage {
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "visit_id")
-    private Visit visit;
+
 
     @Column(nullable = false)
     private String fileName;

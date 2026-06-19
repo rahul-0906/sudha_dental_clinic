@@ -13,9 +13,4 @@ public interface XrayImageRepository extends JpaRepository<XrayImage, Long> {
      * Returns all X-ray images for a given patient.
      */
     List<XrayImage> findByPatientId(Long patientId);
-
-    /**
-     * Returns all X-ray images associated with a specific visit.
-     */
-    List<XrayImage> findByVisitId(Long visitId);
 }

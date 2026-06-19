@@ -1,7 +1,6 @@
 package com.sudhaclinic.controller;
 
 import com.sudhaclinic.dto.PatientDTO;
-import com.sudhaclinic.dto.VisitDTO;
 import com.sudhaclinic.service.PatientService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -55,14 +54,5 @@ public class PatientController {
         return ResponseEntity.ok(patient);
     }
 
-    /**
-     * GET /api/patients/{id}/visits
-     * Fetch complete visit history for a patient including prescriptions.
-     */
-    @GetMapping("/{id}/visits")
-    public ResponseEntity<List<VisitDTO>> getVisitHistory(@PathVariable Long id) {
-        log.debug("GET /api/patients/{}/visits", id);
-        List<VisitDTO> history = patientService.getVisitHistory(id);
-        return ResponseEntity.ok(history);
-    }
+
 }

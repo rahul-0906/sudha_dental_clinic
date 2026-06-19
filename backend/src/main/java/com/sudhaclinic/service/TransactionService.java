@@ -2,14 +2,9 @@ package com.sudhaclinic.service;
 
 import com.sudhaclinic.dto.DailyReportDTO;
 import com.sudhaclinic.dto.TransactionDTO;
-import com.sudhaclinic.entity.Prescription;
 import com.sudhaclinic.entity.Transaction;
 import com.sudhaclinic.entity.TransactionType;
-import com.sudhaclinic.entity.Visit;
-import com.sudhaclinic.entity.VisitStatus;
-import com.sudhaclinic.repository.PrescriptionRepository;
 import com.sudhaclinic.repository.TransactionRepository;
-import com.sudhaclinic.repository.VisitRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,8 +21,6 @@ import java.util.stream.Collectors;
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
-    private final VisitRepository visitRepository;
-    private final PrescriptionRepository prescriptionRepository;
 
     /**
      * Fetch all transactions within a date range (inclusive).
@@ -55,10 +48,7 @@ public class TransactionService {
                 .amount(dto.getAmount())
                 .build();
 
-        if (dto.getVisitId() != null) {
-            visitRepository.findById(dto.getVisitId())
-                    .ifPresent(transaction::setVisit);
-        }
+
 
         Transaction saved = transactionRepository.save(transaction);
         return toDTO(saved);
@@ -76,11 +66,7 @@ public class TransactionService {
         BigDecimal totalExpense = transactionRepository.sumAmountByTypeAndDate(TransactionType.EXPENSE, date);
         BigDecimal closingBalance = totalIncome.subtract(totalExpense);
 
-        // Count distinct patients seen today (visits on this date)
-        List<Visit> todayVisits = visitRepository.findByVisitDate(date);
-        int patientCount = todayVisits.size();
-
-        // Count total medicines dispensed today
+        int patientCount = 0;
         int medicinesSold = 0;
         BigDecimal consultationIncome = BigDecimal.ZERO;
         BigDecimal medicineIncome = BigDecimal.ZERO;
@@ -96,13 +82,7 @@ public class TransactionService {
             }
         }
 
-        // Sum up medicines dispensed from prescriptions linked to today's visits
-        for (Visit visit : todayVisits) {
-            List<Prescription> prescriptions = prescriptionRepository.findByVisitId(visit.getId());
-            for (Prescription p : prescriptions) {
-                medicinesSold += p.getQuantityDispensed();
-            }
-        }
+
 
         return DailyReportDTO.builder()
                 .reportDate(date)
@@ -126,7 +106,7 @@ public class TransactionService {
                 .category(t.getCategory())
                 .description(t.getDescription())
                 .amount(t.getAmount())
-                .visitId(t.getVisit() != null ? t.getVisit().getId() : null)
+                .visitId(null)
                 .createdAt(t.getCreatedAt())
                 .build();
     }
