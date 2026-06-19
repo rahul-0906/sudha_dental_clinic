@@ -120,6 +120,28 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col h-full w-full bg-[#F8FAFC] overflow-y-auto p-6 gap-6 select-none">
       
+      {/* QUICK ACTIONS ROW */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        {quickActions.map((action, i) => {
+          const ActionIcon = action.icon
+          return (
+            <button
+              key={i}
+              onClick={action.action}
+              className="bg-white border border-slate-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md hover:border-slate-200 transition-all text-left cursor-pointer group"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-teal-50 group-hover:bg-teal-100 text-teal-600 transition-colors flex items-center justify-center shrink-0">
+                <ActionIcon size={22} strokeWidth={1.5} />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-bold text-slate-805">{action.label}</div>
+                <div className="text-xs text-slate-400 mt-1 truncate">{action.desc}</div>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+
       {/* 1. KPI STATS ROW */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         
@@ -477,27 +499,7 @@ export default function Dashboard() {
 
       </div>
 
-      {/* 4. QUICK ACTIONS FOOTER ROW */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        {quickActions.map((action, i) => {
-          const ActionIcon = action.icon
-          return (
-            <button
-              key={i}
-              onClick={action.action}
-              className="bg-white border border-slate-100 rounded-2xl p-4 flex items-center gap-3.5 shadow-sm hover:shadow-md hover:border-slate-200 transition-all text-left cursor-pointer group"
-            >
-              <div className="w-10 h-10 rounded-xl bg-teal-50 group-hover:bg-teal-100 text-teal-600 transition-colors flex items-center justify-center shrink-0">
-                <ActionIcon size={20} strokeWidth={1.5} />
-              </div>
-              <div className="min-w-0">
-                <div className="text-xs font-bold text-slate-800">{action.label}</div>
-                <div className="text-[10px] text-slate-450 mt-0.5 truncate">{action.desc}</div>
-              </div>
-            </button>
-          )
-        })}
-      </div>
+
 
     </div>
   )
