@@ -97,13 +97,8 @@ export default function AppShell() {
           <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400 shrink-0">
             <ToothLogo size={20} />
           </div>
-          <div className="flex flex-col justify-center">
-            <div className="text-sm font-bold leading-none text-white">
-              Sudha
-            </div>
-            <div className="text-[10px] font-medium text-slate-400 block mt-1">
-              Dental Clinic
-            </div>
+          <div className="text-sm font-bold text-white whitespace-nowrap">
+            Sudha Dental Clinic
           </div>
         </div>
 
