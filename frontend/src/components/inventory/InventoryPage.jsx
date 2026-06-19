@@ -126,63 +126,74 @@ export default function InventoryPage() {
   }
 
   return (
-    <div style={{ padding: 24, height: '100%', overflow: 'auto' }}>
+    <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 bg-[#F8FAFC]">
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+      <div className="flex items-center justify-between border-b border-slate-200 pb-3 shrink-0 select-none">
         <div>
-          <h2 style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0, fontSize: 20, fontWeight: 800, color: 'var(--text-primary)' }}>
-            <Package size={20} style={{ color: 'var(--primary)' }} />
-            <span>Inventory</span>
+          <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
+            <Package size={18} className="text-teal-600" />
+            <span>Inventory Management</span>
           </h2>
-          <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-muted)' }}>
+          <p className="text-[10px] text-slate-400 mt-1 font-medium">
             {meds.length} medicines · {lowStockCount} low stock alerts
           </p>
         </div>
-        <button onClick={() => { setModalMed(null); setShowModal(true) }} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Plus size={16} />
-          Add Medicine
+        <button 
+          onClick={() => { setModalMed(null); setShowModal(true) }} 
+          className="flex items-center gap-1.5 px-4 h-10 text-xs rounded-xl bg-teal-650 hover:bg-teal-700 text-white font-bold transition-all shadow-sm cursor-pointer"
+        >
+          <Plus size={14} strokeWidth={2.5} />
+          <span>Add Medicine</span>
         </button>
       </div>
 
       {/* Low Stock Banner */}
       {lowStockCount > 0 && (
-        <div style={{
-          padding: '10px 16px', borderRadius: 'var(--radius)', marginBottom: 16,
-          background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.3)',
-          display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#FCD34D',
-        }}>
-          <AlertTriangle size={16} color="#F59E0B" />
+        <div className="flex items-center gap-2.5 p-4 bg-amber-50/50 border border-amber-100 rounded-2xl shadow-sm text-xs text-amber-805 select-none">
+          <AlertTriangle size={16} className="text-amber-600 shrink-0" />
           <span><strong>{lowStockCount}</strong> items are running low on stock and need reordering.</span>
         </div>
       )}
 
       {/* Search + Filter */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-        <div style={{ position: 'relative', flex: 1 }}>
-          <Search size={15} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
-          <input className="input-field" placeholder="Search medicines..." value={search} onChange={(e) => setSearch(e.target.value)} style={{ paddingLeft: 34, width: '100%', boxSizing: 'border-box' }} />
+      <div className="flex items-center gap-3 bg-white p-4 border border-slate-100 rounded-2xl shadow-sm select-none">
+        <div className="relative flex-1">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <input 
+            className="w-full h-9 bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 text-xs focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all" 
+            placeholder="Search medicines..." 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)} 
+          />
         </div>
-        <div style={{ display: 'flex', gap: 4 }}>
-          {['ALL', 'DENTAL', 'MEDICINE', 'LOW'].map(f => (
-            <button key={f} onClick={() => setFilter(f)} style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '7px 14px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-              background: filter === f ? 'rgba(13,148,136,0.2)' : 'rgba(255,255,255,0.04)',
-              border: filter === f ? '1px solid var(--border-bright)' : '1px solid var(--border)',
-              color: filter === f ? 'var(--primary-light)' : 'var(--text-muted)',
-            }}>
-              {f === 'LOW' && <AlertTriangle size={12} />}
-              {f === 'DENTAL' && <ToothLogo size={12} />}
-              {f === 'MEDICINE' && <Pill size={12} />}
-              <span>{f === 'LOW' ? 'Low' : f === 'ALL' ? 'All' : f === 'DENTAL' ? 'Dental' : 'Medicine'}</span>
-            </button>
-          ))}
+        <div className="flex items-center gap-1.5">
+          {['ALL', 'DENTAL', 'MEDICINE', 'LOW'].map(f => {
+            const isSelected = filter === f
+            return (
+              <button 
+                key={f} 
+                onClick={() => setFilter(f)} 
+                className={`
+                  flex items-center gap-1.5 h-9 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer border
+                  ${isSelected 
+                    ? 'bg-teal-50 text-teal-700 border-teal-200 shadow-sm' 
+                    : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100 hover:text-slate-700'
+                  }
+                `}
+              >
+                {f === 'LOW' && <AlertTriangle size={14} />}
+                {f === 'DENTAL' && <ToothLogo size={14} />}
+                {f === 'MEDICINE' && <Pill size={14} />}
+                <span>{f === 'LOW' ? 'Low Stock' : f === 'ALL' ? 'All' : f === 'DENTAL' ? 'Dental' : 'Medicine'}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
       {/* Table */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>Loading inventory...</div>
+        <div className="text-center py-20 text-slate-400 text-xs font-medium">Loading inventory...</div>
       ) : (
         <div className="w-full overflow-x-auto bg-white border border-slate-200 rounded-xl shadow-sm">
           <table className="w-full text-left border-collapse">
@@ -227,11 +238,11 @@ export default function InventoryPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">{med.reorderLevel}</td>
                     <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">₹{med.unitCostPrice}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-teal-600 whitespace-nowrap">₹{med.unitSellingPrice}</td>
+                    <td className="px-6 py-4 text-sm font-semibold text-teal-650 whitespace-nowrap">₹{med.unitSellingPrice}</td>
                     <td className="px-6 py-4 text-sm whitespace-nowrap">
                       <button 
                         onClick={() => { setModalMed(med); setShowModal(true) }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:text-teal-600 hover:border-teal-300 hover:bg-teal-50/50 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-650 bg-white border border-slate-200 rounded-lg hover:text-teal-600 hover:border-teal-300 hover:bg-teal-50/50 transition-colors cursor-pointer"
                       >
                         <Edit2 size={12} />
                         <span>Edit</span>
