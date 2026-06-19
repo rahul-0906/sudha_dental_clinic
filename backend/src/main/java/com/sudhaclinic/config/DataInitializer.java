@@ -129,7 +129,7 @@ public class DataInitializer {
             if (clinicSettingsRepository.count() == 0) {
                 log.info("Seeding clinic settings...");
                 clinicSettingsRepository.save(ClinicSettings.builder()
-                        .clinicName("SUDHA Dental & Medical Clinic")
+                        .clinicName("Sudha Dental Clinic")
                         .phone("+91 98765 43210")
                         .address("Sankarankovil, Tamil Nadu")
                         .dailyPin("1234")

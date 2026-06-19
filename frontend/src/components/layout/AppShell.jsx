@@ -102,7 +102,7 @@ export default function AppShell() {
               Sudha
             </div>
             <div className="text-[9px] font-medium text-slate-400 uppercase tracking-widest block mt-1">
-              Dental & Medical
+              Dental Clinic
             </div>
           </div>
         </div>
@@ -178,7 +178,7 @@ export default function AppShell() {
               Good morning, Dr. Mariyappan <span className="text-sm">👋</span>
             </h1>
             <p className="text-[10px] text-slate-400 mt-1 font-medium">
-              Here's what's happening at Sudha Dental & Medical Clinic today.
+              Here's what's happening at Sudha Dental Clinic today.
             </p>
           </div>
 

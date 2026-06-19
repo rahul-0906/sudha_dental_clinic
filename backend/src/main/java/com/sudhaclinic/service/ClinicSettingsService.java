@@ -23,7 +23,7 @@ public class ClinicSettingsService {
         if (list.isEmpty()) {
             // Create default
             ClinicSettings defaultSettings = ClinicSettings.builder()
-                    .clinicName("SUDHA Dental & Medical Clinic")
+                    .clinicName("Sudha Dental Clinic")
                     .phone("+91 98765 43210")
                     .address("Sankarankovil, Tamil Nadu")
                     .dailyPin("1234")
