@@ -286,7 +286,7 @@ export default function PatientHistoryPage({ defaultPatientId }) {
             <p className="text-xs text-slate-500 max-w-xs mt-1">Select a patient from the directory on the left to view timelines, charts, and histories.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 xl:grid-cols-[1fr_2.2fr] gap-6 items-start w-full">
+          <div className="grid grid-cols-1 xl:grid-cols-[35fr_65fr] gap-6 items-start w-full">
             
             {/* 2.1 LEFT COLUMN: Demographic Profile details & Stats */}
             <div className="flex flex-col gap-6">

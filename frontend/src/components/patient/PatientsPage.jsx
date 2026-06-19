@@ -12,12 +12,14 @@ import {
   Activity,
   ChevronLeft,
   ChevronRight,
-  Eye
+  Eye,
+  ArrowLeft
 } from 'lucide-react'
 import { searchPatients } from '../../api/patients'
 import { addToQueue } from '../../api/visits'
 import PatientRegistrationModal from './PatientRegistrationModal'
 import PatientHistoryPage from './PatientHistoryPage'
+import { setActiveView } from '../../store/slices/appSlice'
 import toast from 'react-hot-toast'
 
 export default function PatientsPage() {
@@ -83,7 +85,7 @@ export default function PatientsPage() {
     // If a patient is selected, render a back button and the history details
     return (
       <div className="flex flex-col h-full bg-slate-50 overflow-hidden">
-        <header className="h-14 shrink-0 bg-white border-b border-slate-200 px-6 flex items-center gap-4">
+        <header className="h-[72px] shrink-0 bg-white border-b border-slate-200/80 px-6 flex items-center gap-4 z-40">
           <button 
             onClick={() => setSelectedPatientId(null)}
             className="text-xs font-bold text-slate-500 hover:text-slate-700 flex items-center gap-1.5 cursor-pointer"
@@ -106,8 +108,14 @@ export default function PatientsPage() {
       {/* Header section */}
       <div className="flex items-center justify-between border-b border-slate-200 pb-3 shrink-0">
         <div>
-          <h2 className="text-base font-bold text-slate-800">Patients</h2>
-          <p className="text-[10px] text-slate-400 mt-1 font-medium">
+          <button 
+            onClick={() => dispatch(setActiveView('dashboard'))} 
+            className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-755 cursor-pointer"
+          >
+            <ArrowLeft size={16} />
+            <span className="text-sm font-bold text-slate-800">Patients Directory</span>
+          </button>
+          <p className="text-[10px] text-slate-400 mt-1 font-medium ml-5">
             Manage patient profiles and their information
           </p>
         </div>

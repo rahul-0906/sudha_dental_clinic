@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Plus, Search, Edit2, Package, AlertTriangle, Pill, X } from 'lucide-react'
+import { useDispatch } from 'react-redux'
+import { Plus, Search, Edit2, Package, AlertTriangle, Pill, X, ArrowLeft } from 'lucide-react'
 import { getAllMedications, createMedication, updateMedication, getLowStockAlerts } from '../../api/medications'
 import { ToothLogo } from '../layout/AppShell'
+import { setActiveView } from '../../store/slices/appSlice'
 import toast from 'react-hot-toast'
 
 const EMPTY_FORM = { name: '', category: 'MEDICINE', unit: 'Tablet', currentStock: 0, reorderLevel: 10, unitCostPrice: '', unitSellingPrice: '' }
@@ -172,6 +174,7 @@ function MedModal({ med, onClose, onSave }) {
 }
 
 export default function InventoryPage() {
+  const dispatch = useDispatch()
   const [meds, setMeds] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -212,11 +215,14 @@ export default function InventoryPage() {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-200 pb-3 shrink-0 select-none">
         <div>
-          <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
-            <Package size={18} className="text-teal-600" />
-            <span>Inventory Management</span>
-          </h2>
-          <p className="text-[10px] text-slate-400 mt-1 font-medium">
+          <button 
+            onClick={() => dispatch(setActiveView('dashboard'))} 
+            className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-755 cursor-pointer"
+          >
+            <ArrowLeft size={16} />
+            <span className="text-sm font-bold text-slate-800">Inventory Management</span>
+          </button>
+          <p className="text-[10px] text-slate-400 mt-1 font-medium ml-5">
             {meds.length} medicines · {lowStockCount} low stock alerts
           </p>
         </div>
