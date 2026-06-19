@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Search, Edit2, Package, AlertTriangle, Pill } from 'lucide-react'
+import { Plus, Search, Edit2, Package, AlertTriangle, Pill, X } from 'lucide-react'
 import { getAllMedications, createMedication, updateMedication, getLowStockAlerts } from '../../api/medications'
 import { ToothLogo } from '../layout/AppShell'
 import toast from 'react-hot-toast'
@@ -34,52 +34,134 @@ function MedModal({ med, onClose, onSave }) {
       className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-100 p-6 transition-all">
-        <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-5">
-          {med ? <Edit2 size={20} strokeWidth={1.5} className="text-teal-600" /> : <Plus size={20} strokeWidth={1.5} className="text-teal-600" />}
-          <span>{med ? 'Edit Medicine' : 'Add Medicine'}</span>
-        </h2>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-100 p-6 transition-all">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5 select-none">
+          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+            {med ? <Edit2 size={20} strokeWidth={1.5} className="text-teal-650" /> : <Plus size={20} strokeWidth={1.5} className="text-teal-650" />}
+            <span>{med ? 'Edit Medicine' : 'Add Medicine'}</span>
+          </h2>
+          <button 
+            type="button"
+            onClick={onClose} 
+            className="text-slate-404 hover:text-slate-600 transition-colors cursor-pointer"
+          >
+            <X size={20} strokeWidth={1.5} />
+          </button>
+        </div>
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Medicine Name *</label>
-            <input className="input-field w-full" placeholder="e.g. Amoxicillin 500mg" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+            {/* Medicine Name */}
+            <div className="flex flex-col gap-1.5 col-span-2">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Medicine Name *
+              </label>
+              <input 
+                className="input-field w-full" 
+                placeholder="e.g. Amoxicillin 500mg" 
+                value={form.name} 
+                onChange={(e) => setForm({ ...form, name: e.target.value })} 
+              />
+            </div>
+
+            {/* Category */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Category</label>
-              <select className="input-field w-full" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Category *
+              </label>
+              <select 
+                className="input-field w-full cursor-pointer" 
+                value={form.category} 
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+              >
                 <option value="MEDICINE">Medicine</option>
                 <option value="DENTAL">Dental Consumable</option>
               </select>
             </div>
+
+            {/* Unit */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Unit</label>
-              <input className="input-field w-full" placeholder="Tablet, ml..." value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Unit *
+              </label>
+              <input 
+                className="input-field w-full" 
+                placeholder="e.g. Tablet, ml, Cartridge" 
+                value={form.unit} 
+                onChange={(e) => setForm({ ...form, unit: e.target.value })} 
+              />
+            </div>
+
+            {/* Current Stock */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Current Stock *
+              </label>
+              <input 
+                type="number" 
+                className="input-field w-full" 
+                value={form.currentStock} 
+                onChange={(e) => setForm({ ...form, currentStock: parseInt(e.target.value) || 0 })} 
+              />
+            </div>
+
+            {/* Reorder Level */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Reorder Level *
+              </label>
+              <input 
+                type="number" 
+                className="input-field w-full" 
+                value={form.reorderLevel} 
+                onChange={(e) => setForm({ ...form, reorderLevel: parseInt(e.target.value) || 0 })} 
+              />
+            </div>
+
+            {/* Cost Price */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Cost Price (₹) *
+              </label>
+              <input 
+                type="number" 
+                step="0.01" 
+                className="input-field w-full" 
+                value={form.unitCostPrice} 
+                onChange={(e) => setForm({ ...form, unitCostPrice: e.target.value })} 
+              />
+            </div>
+
+            {/* Selling Price */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Selling Price (₹) *
+              </label>
+              <input 
+                type="number" 
+                step="0.01" 
+                className="input-field w-full" 
+                value={form.unitSellingPrice} 
+                onChange={(e) => setForm({ ...form, unitSellingPrice: e.target.value })} 
+              />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Current Stock</label>
-              <input type="number" className="input-field w-full" value={form.currentStock} onChange={(e) => setForm({ ...form, currentStock: parseInt(e.target.value) || 0 })} />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Reorder Level</label>
-              <input type="number" className="input-field w-full" value={form.reorderLevel} onChange={(e) => setForm({ ...form, reorderLevel: parseInt(e.target.value) || 0 })} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Cost Price (₹)</label>
-              <input type="number" step="0.01" className="input-field w-full" value={form.unitCostPrice} onChange={(e) => setForm({ ...form, unitCostPrice: e.target.value })} />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Selling Price (₹)</label>
-              <input type="number" step="0.01" className="input-field w-full" value={form.unitSellingPrice} onChange={(e) => setForm({ ...form, unitSellingPrice: e.target.value })} />
-            </div>
-          </div>
-          <div className="flex items-center gap-3 mt-4 border-t border-slate-100 pt-4">
-            <button type="button" onClick={onClose} className="btn-secondary flex-1">Cancel</button>
-            <button type="submit" disabled={saving} className="btn-primary flex-2">
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3 mt-6 border-t border-slate-100 pt-4 select-none">
+            <button 
+              type="button" 
+              onClick={onClose} 
+              className="btn-secondary flex-1"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              disabled={saving} 
+              className="btn-primary flex-2"
+            >
               {saving ? 'Saving...' : med ? 'Update Medicine' : 'Add Medicine'}
             </button>
           </div>

@@ -10,7 +10,8 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
-  MoreHorizontal
+  MoreHorizontal,
+  X
 } from 'lucide-react'
 import { useDispatch } from 'react-redux'
 import { setActiveView } from '../../store/slices/appSlice'
@@ -221,62 +222,80 @@ export default function StaffPage() {
 
       {/* Add Staff Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-6 shadow-xl w-full max-w-md border border-slate-100 animate-fade-in">
-            <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 select-none">
-              <h3 className="font-bold text-slate-800 text-sm">{editMode ? 'Edit Staff Details' : 'Add Staff Member'}</h3>
+        <div 
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={(e) => e.target === e.currentTarget && setShowAddModal(false)}
+        >
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-100 p-6 transition-all">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-5 select-none">
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <Users size={20} strokeWidth={1.5} className="text-teal-650" />
+                <span>{editMode ? 'Edit Staff Details' : 'Add Staff Member'}</span>
+              </h2>
               <button 
-                onClick={() => setShowAddModal(false)}
-                className="text-slate-400 hover:text-slate-600 rounded-lg p-1.5 cursor-pointer"
+                type="button"
+                onClick={() => setShowAddModal(false)} 
+                className="text-slate-404 hover:text-slate-600 transition-colors cursor-pointer"
               >
-                <Plus className="rotate-45" size={18} />
+                <X size={20} strokeWidth={1.5} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-xs">
-              <div className="flex flex-col gap-1.5">
-                <label className="font-bold text-slate-600">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Rahul Kumar"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="h-9 w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 text-xs text-slate-700 focus:outline-none"
-                />
-              </div>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                {/* Full Name */}
+                <div className="flex flex-col gap-1.5 col-span-2">
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Rahul Kumar"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="input-field w-full"
+                  />
+                </div>
 
-              <div className="grid grid-cols-2 gap-3">
+                {/* Phone */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-slate-600">Phone</label>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Phone Number *
+                  </label>
                   <input
                     type="text"
                     placeholder="+91 98765 XXXXX"
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    className="h-9 w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 text-xs text-slate-700 focus:outline-none"
+                    className="input-field w-full"
                   />
                 </div>
 
+                {/* Email */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-slate-600">Email</label>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Email Address
+                  </label>
                   <input
                     type="email"
                     placeholder="email@domain.com"
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="h-9 w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 text-xs text-slate-700 focus:outline-none"
+                    className="input-field w-full"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
+                {/* Role */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-slate-600">Role</label>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Role *
+                  </label>
                   <select
                     value={form.role}
                     onChange={(e) => setForm({ ...form, role: e.target.value })}
-                    className="h-9 w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 text-xs text-slate-700 focus:outline-none cursor-pointer"
+                    className="input-field w-full cursor-pointer"
                   >
                     <option value="DENTIST">DENTIST</option>
                     <option value="NURSE">NURSE</option>
@@ -285,57 +304,65 @@ export default function StaffPage() {
                   </select>
                 </div>
 
+                {/* Status */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-slate-600">Status</label>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Status *
+                  </label>
                   <select
                     value={form.status}
                     onChange={(e) => setForm({ ...form, status: e.target.value })}
-                    className="h-9 w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 text-xs text-slate-700 focus:outline-none cursor-pointer"
+                    className="input-field w-full cursor-pointer"
                   >
                     <option value="ACTIVE">ACTIVE</option>
                     <option value="ON_BREAK">ON_BREAK</option>
                     <option value="OFF_DUTY">OFF_DUTY</option>
                   </select>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
+                {/* Shift Start */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-slate-600">Shift Start</label>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Shift Start *
+                  </label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. 09:00 AM"
                     value={form.shiftStart}
                     onChange={(e) => setForm({ ...form, shiftStart: e.target.value })}
-                    className="h-9 w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 text-xs text-slate-700 focus:outline-none"
+                    className="input-field w-full"
                   />
                 </div>
 
+                {/* Shift End */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="font-bold text-slate-600">Shift End</label>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Shift End *
+                  </label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. 05:00 PM"
                     value={form.shiftEnd}
                     onChange={(e) => setForm({ ...form, shiftEnd: e.target.value })}
-                    className="h-9 w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 text-xs text-slate-700 focus:outline-none"
+                    className="input-field w-full"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2.5 mt-4 pt-2 border-t border-slate-100 select-none">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 h-9 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold cursor-pointer"
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3 mt-6 border-t border-slate-100 pt-4 select-none">
+                <button 
+                  type="button" 
+                  onClick={() => setShowAddModal(false)} 
+                  className="btn-secondary flex-1"
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="px-4 h-9 rounded-lg bg-teal-650 hover:bg-teal-700 text-white font-bold cursor-pointer"
+                <button 
+                  type="submit" 
+                  className="btn-primary flex-2"
                 >
                   Save
                 </button>
