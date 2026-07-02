@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   LayoutDashboard,
@@ -13,10 +13,13 @@ import {
   ChevronRight,
   Sun,
   Search,
-  Calendar
+  Calendar,
+  Loader2
 } from 'lucide-react'
 import { setActiveView } from '../../store/slices/appSlice'
 import { getLowStockAlerts } from '../../api/medications'
+import { searchPatients } from '../../api/patients'
+import { setSelectedPatient } from '../../store/slices/patientSlice'
 import BillingPage from '../finance/BillingPage'
 import InventoryPage from '../inventory/InventoryPage'
 import ReportsPage from '../finance/ReportsPage'
@@ -26,6 +29,7 @@ import AppointmentsPage from '../appointments/AppointmentsPage'
 import MessagesPage from '../messages/MessagesPage'
 import StaffPage from '../staff/StaffPage'
 import SettingsPage from '../settings/SettingsPage'
+import ActiveConsultation from '../consultation/ActiveConsultation'
 import { useLocation } from 'react-router-dom'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -55,6 +59,49 @@ export default function AppShell() {
   const [lowStockCount, setLowStockCount] = useState(0)
   const location = useLocation()
 
+  // Global Header Search States
+  const [globalSearchQuery, setGlobalSearchQuery] = useState('')
+  const [globalSearchResults, setGlobalSearchResults] = useState([])
+  const [globalSearchLoading, setGlobalSearchLoading] = useState(false)
+  const [showGlobalSearchDropdown, setShowGlobalSearchDropdown] = useState(false)
+  const globalSearchRef = useRef(null)
+  const debounceSearchRef = useRef(null)
+
+  // Handle outside clicks to close global search dropdown
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (globalSearchRef.current && !globalSearchRef.current.contains(event.target)) {
+        setShowGlobalSearchDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleGlobalSearchChange = (val) => {
+    setGlobalSearchQuery(val)
+    setShowGlobalSearchDropdown(true)
+
+    if (debounceSearchRef.current) clearTimeout(debounceSearchRef.current)
+    
+    if (!val.trim()) {
+      setGlobalSearchResults([])
+      setGlobalSearchLoading(false)
+      return
+    }
+
+    setGlobalSearchLoading(true)
+    debounceSearchRef.current = setTimeout(async () => {
+      try {
+        const res = await searchPatients(val)
+        setGlobalSearchResults(res.data || [])
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setGlobalSearchLoading(false)
+      }
+    }, 300)
+  }
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000)
@@ -62,7 +109,7 @@ export default function AppShell() {
   }, [])
 
   useEffect(() => {
-    getLowStockAlerts().then(res => setLowStockCount(res.data.length)).catch(() => {})
+    getLowStockAlerts().then(res => setLowStockCount(res.data?.length || 0)).catch(() => {})
   }, [])
 
   const handleLogout = () => {
@@ -85,6 +132,10 @@ export default function AppShell() {
       case 'settings': return <SettingsPage />
       default: return <Dashboard />
     }
+  }
+
+  if (activeView === 'consultation') {
+    return <ActiveConsultation />
   }
 
   return (
@@ -185,16 +236,54 @@ export default function AppShell() {
 
           <div className="flex items-center gap-4">
             {/* Search Bar */}
-            <div className="relative w-64 md:w-80">
+            <div ref={globalSearchRef} className="relative w-64 md:w-80 border-box">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input 
                 type="text" 
-                placeholder="Search patients, appointments..."
-                className="w-full h-9 bg-slate-50 border border-slate-250 rounded-lg pl-9 pr-12 text-xs focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all"
+                placeholder="Search patients..."
+                value={globalSearchQuery}
+                onChange={(e) => handleGlobalSearchChange(e.target.value)}
+                onFocus={() => setShowGlobalSearchDropdown(true)}
+                className="w-full h-9 bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-12 text-xs focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all font-sans"
               />
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded font-mono">
-                ⌘ K
-              </span>
+              {globalSearchLoading ? (
+                <Loader2 size={12} className="absolute right-10 top-1/2 -translate-y-1/2 text-slate-450 animate-spin" />
+              ) : (
+                <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded font-mono select-none">
+                  ⌘ K
+                </span>
+              )}
+
+              {/* Global Search Dropdown Overlay */}
+              {showGlobalSearchDropdown && globalSearchQuery.trim() && (
+                <div className="absolute left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto border-box">
+                  {globalSearchResults.length === 0 ? (
+                    <div className="p-3 text-center text-xs text-slate-400 font-sans font-medium">
+                      No patients found
+                    </div>
+                  ) : (
+                    globalSearchResults.map((pat) => (
+                      <div
+                        key={pat.id}
+                        onClick={() => {
+                          dispatch(setSelectedPatient(pat))
+                          dispatch(setActiveView('patients'))
+                          setGlobalSearchQuery('')
+                          setGlobalSearchResults([])
+                          setShowGlobalSearchDropdown(false)
+                        }}
+                        className="px-4 py-2.5 hover:bg-slate-50 cursor-pointer flex items-center justify-between border-b border-slate-100 last:border-0 text-left text-slate-750 font-sans"
+                      >
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-bold text-slate-800 truncate">{pat.name}</span>
+                          <span className="text-[10px] text-slate-400 font-mono mt-0.5">{pat.phone}</span>
+                        </div>
+                        <ChevronRight size={14} className="text-slate-400 shrink-0 ml-2" />
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Notifications Button */}

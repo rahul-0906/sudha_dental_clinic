@@ -1,544 +1,421 @@
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { 
-  Users, 
-  Calendar, 
-  Activity, 
-  TrendingUp, 
-  Clock,
-  UserPlus, 
-  FileText, 
-  Pill, 
-  CreditCard,
-  User,
+import {
+  Users,
+  Calendar,
   DollarSign,
-  ChevronRight,
-  Heart,
-  Thermometer,
-  Percent,
-  Wind,
-  Droplet,
-  Weight,
+  Package,
+  TrendingUp,
+  Clock,
+  UserPlus,
+  FileText,
   AlertTriangle,
-  FileCheck2,
-  MailCheck,
-  ChevronLeft,
-  Loader2
+  ChevronRight,
+  Loader2,
+  CheckCircle,
+  Plus,
+  AlertCircle
 } from 'lucide-react'
 import { setActiveView } from '../../store/slices/appSlice'
+import { setSelectedPatient } from '../../store/slices/patientSlice'
 import { searchPatients } from '../../api/patients'
 import { getAppointments } from '../../api/appointments'
-import { getLowStockAlerts } from '../../api/medications'
+import { getAllMedications, getLowStockAlerts } from '../../api/medications'
+import { format } from 'date-fns'
 import toast from 'react-hot-toast'
-
-// Helper for rendering sparkline charts
-const Sparkline = ({ points, color = '#10B981' }) => {
-  return (
-    <svg className="w-16 h-5" viewBox="0 0 60 20">
-      <path
-        d={points}
-        fill="none"
-        stroke={color}
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
 
 export default function Dashboard() {
   const dispatch = useDispatch()
 
-  // API State
+  // API States
   const [patients, setPatients] = useState([])
   const [appointments, setAppointments] = useState([])
-  const [lowStockMedications, setLowStockMedications] = useState([])
-  const [selectedPatient, setSelectedPatient] = useState(null)
+  const [medications, setMedications] = useState([])
+  const [lowStockCount, setLowStockCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
-  // Load dashboard data from APIs
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        const [patientsRes, apptsRes, lowStockRes] = await Promise.all([
-          searchPatients(''),
-          getAppointments(),
-          getLowStockAlerts()
-        ])
+  // Fetch all dashboard data
+  const loadDashboardData = async () => {
+    setLoading(true)
+    try {
+      const [patientsRes, apptsRes, medsRes, lowRes] = await Promise.all([
+        searchPatients(''),
+        getAppointments(),
+        getAllMedications(),
+        getLowStockAlerts()
+      ])
 
-        const patientList = patientsRes.data || []
-        const appointmentList = apptsRes.data || []
-
-        setPatients(patientList)
-        setAppointments(appointmentList)
-        setLowStockMedications(lowStockRes.data || [])
-
-        // Set default selected patient (e.g. Priya Nair if she exists, else first patient)
-        if (patientList.length > 0) {
-          const priya = patientList.find(p => p.name.toLowerCase().includes('priya'))
-          const defaultPat = priya || patientList[0]
-          setSelectedPatient(defaultPat)
-        }
-      } catch (err) {
-        console.error('Failed to load dashboard data', err)
-      } finally {
-        setLoading(false)
-      }
+      setPatients(patientsRes.data || [])
+      setAppointments(apptsRes.data || [])
+      setMedications(medsRes.data || [])
+      setLowStockCount(lowRes.data?.length || 0)
+    } catch (err) {
+      console.error('Failed to load dashboard statistics', err)
+      toast.error('Failed to update dashboard data.')
+    } finally {
+      setLoading(false)
     }
+  }
+
+  useEffect(() => {
     loadDashboardData()
   }, [])
 
-  // Update selected patient
-  const handleSelectPatient = (pat) => {
-    setSelectedPatient(pat)
-  }
-
   // Filter today's appointments
-  const todayStr = new Date().toISOString().split('T')[0]
-  const todayAppointments = appointments.filter(a => {
-    if (!a.appointmentDate) return false
-    return a.appointmentDate.toString().startsWith(todayStr) || a.appointmentDate === '2026-06-18' || a.appointmentDate === '2026-06-17'
+  const formattedToday = format(new Date(), 'yyyy-MM-dd')
+  const todayAppointments = appointments.filter(appt => {
+    return appt.appointmentDate?.startsWith(formattedToday)
   })
 
-  // Fallback to mock if empty
-  const displayTodayAppts = todayAppointments.length > 0 ? todayAppointments : appointments.slice(0, 5)
-
-  // KPI Calculations
-  const totalPatientsCount = patients.length > 0 ? patients.length + 1239 : 1246
-  const apptsCountToday = displayTodayAppts.length > 0 ? displayTodayAppts.length : 18
-  const revenueToday = "₹45,680"
-  const newPatientsCount = 7
-
-  // Quick actions mapping
-  const quickActions = [
-    { label: "New Patient", desc: "Register patient", icon: UserPlus, action: () => dispatch(setActiveView('patients')) },
-    { label: "Book Appointment", desc: "Schedule new appointment", icon: Calendar, action: () => dispatch(setActiveView('appointments')) },
-    { label: "Payment", desc: "Record payment", icon: CreditCard, action: () => dispatch(setActiveView('finance')) }
+  // Prepopulate with high-fidelity dummy appointments if DB has none for today
+  const dummyAppointments = [
+    {
+      id: 'dash-dummy-1',
+      appointmentDate: formattedToday,
+      appointmentTime: '09:30 AM',
+      duration: '60 Mins',
+      treatment: 'Root Canal Treatment',
+      doctor: 'Dr. Mariyappan',
+      status: 'SCHEDULED',
+      patient: { name: 'Priya Nair', phone: '9876543210', dob: '1995-04-12', gender: 'Female' }
+    },
+    {
+      id: 'dash-dummy-2',
+      appointmentDate: formattedToday,
+      appointmentTime: '11:00 AM',
+      duration: '30 Mins',
+      treatment: 'Scaling & Polishing',
+      doctor: 'Dr. Mariyappan',
+      status: 'ARRIVED',
+      patient: { name: 'Ramesh Kumar', phone: '8976543210', dob: '1988-11-23', gender: 'Male' }
+    },
+    {
+      id: 'dash-dummy-3',
+      appointmentDate: formattedToday,
+      appointmentTime: '02:30 PM',
+      duration: '45 Mins',
+      treatment: 'Composite Fill - Tooth 14',
+      doctor: 'Dr. Mariyappan',
+      status: 'COMPLETED',
+      patient: { name: 'Meera Jasmine', phone: '7976543210', dob: '1991-08-05', gender: 'Female' }
+    }
   ]
+
+  // Combined list for display
+  const activeTodayAppointments = todayAppointments.length > 0
+    ? todayAppointments.map(appt => {
+        let displayStatus = appt.status
+        if (appt.status === 'UPCOMING') displayStatus = 'SCHEDULED'
+        if (appt.status === 'IN_PROGRESS') displayStatus = 'ARRIVED'
+        return { ...appt, status: displayStatus }
+      })
+    : dummyAppointments
+
+  // Jump straight to consultation workflow
+  const handleStartConsultation = () => {
+    // Find the first patient in today's queue or use the first registered patient
+    const targetPatient = activeTodayAppointments[0]?.patient || patients[0]
+    
+    if (targetPatient) {
+      dispatch(setSelectedPatient(targetPatient))
+      dispatch(setActiveView('consultation'))
+      toast.success(`Starting active consultation for ${targetPatient.name}...`)
+    } else {
+      toast.error('No patient directory loaded to start consultation.')
+    }
+  }
+
+  // Get status color badges
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'SCHEDULED':
+        return 'bg-teal-50 border-teal-200 text-teal-700 font-bold'
+      case 'ARRIVED':
+        return 'bg-indigo-50 border-indigo-200 text-indigo-700 font-bold'
+      case 'COMPLETED':
+        return 'bg-slate-50 border-slate-200 text-slate-600'
+      default:
+        return 'bg-slate-50 border-slate-200 text-slate-600'
+    }
+  }
+
+  // Check inventory alert details (Low stock or expiring within 30 days)
+  const inventoryAlertsList = medications
+    .map(med => {
+      // Map mock expiry dates
+      let isExpiringSoon = false
+      const storedExpiry = localStorage.getItem(`expiry_${med.id}`)
+      if (storedExpiry) {
+        const diffDays = Math.ceil((new Date(storedExpiry) - new Date()) / (1000 * 60 * 60 * 24))
+        isExpiringSoon = diffDays >= 0 && diffDays <= 30
+      }
+      return {
+        ...med,
+        isLow: med.currentStock <= med.reorderLevel,
+        isExpiringSoon
+      }
+    })
+    .filter(item => item.isLow || item.isExpiringSoon)
+    .slice(0, 3)
+
+  const currentDateLabel = format(new Date(), 'EEEE, dd MMMM yyyy')
 
   if (loading) {
     return (
-      <div className="flex flex-col h-full w-full bg-[#F8FAFC] overflow-y-auto p-6 gap-6 select-none">
-        {/* Skeleton Quick Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="bg-white border border-slate-100 rounded-2xl p-5 h-22 animate-pulse flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-slate-100 shrink-0" />
-              <div className="flex-1 flex flex-col gap-2">
-                <div className="w-24 h-4 bg-slate-100/80 rounded" />
-                <div className="w-32 h-3 bg-slate-100/50 rounded" />
-              </div>
-            </div>
-          ))}
+      <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 bg-slate-50 select-none animate-pulse">
+        {/* Header Skeleton */}
+        <div className="h-16 bg-white border border-slate-200 rounded-xl p-5 flex justify-between items-center">
+          <div className="flex flex-col gap-2">
+            <div className="w-48 h-4 bg-slate-200 rounded" />
+            <div className="w-32 h-3 bg-slate-150 rounded" />
+          </div>
+          <div className="w-36 h-9 bg-slate-200 rounded-xl" />
         </div>
 
-        {/* Skeleton KPI Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* KPI Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-white border border-slate-100 rounded-2xl p-5 h-28 animate-pulse flex flex-col justify-between">
+            <div key={i} className="bg-white border border-slate-200 rounded-xl p-5 h-28 flex flex-col justify-between">
               <div className="flex justify-between items-center">
-                <div className="w-16 h-3 bg-slate-100 rounded" />
-                <div className="w-8 h-8 rounded-xl bg-slate-100" />
+                <div className="w-20 h-3 bg-slate-200 rounded" />
+                <div className="w-8 h-8 rounded-lg bg-slate-150" />
               </div>
-              <div className="w-20 h-7 bg-slate-205 rounded" />
-              <div className="w-32 h-3.5 bg-slate-100 rounded" />
+              <div className="w-24 h-6 bg-slate-200 rounded" />
+              <div className="w-36 h-3 bg-slate-100 rounded" />
             </div>
           ))}
         </div>
 
-        {/* Skeleton Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white border border-slate-100 rounded-2xl p-5 h-80 animate-pulse" />
-          <div className="bg-white border border-slate-100 rounded-2xl p-5 h-80 animate-pulse" />
+        {/* Main Columns Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-6">
+          <div className="bg-white border border-slate-200 rounded-xl p-6 h-96" />
+          <div className="flex flex-col gap-6">
+            <div className="bg-white border border-slate-200 rounded-xl p-6 h-40" />
+            <div className="bg-white border border-slate-200 rounded-xl p-6 h-40" />
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col h-full w-full bg-[#F8FAFC] overflow-y-auto p-6 gap-6 select-none">
+    <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 bg-slate-50 select-none font-sans">
       
-      {/* QUICK ACTIONS ROW */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {quickActions.map((action, i) => {
-          const ActionIcon = action.icon
-          return (
+
+
+      {/* 2. Top Level: KPI Metric Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-2">
+        
+        {/* Card 1: Today's Patients */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-center justify-between hover:shadow transition-shadow">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-teal-50 text-teal-650 flex items-center justify-center shrink-0">
+              <Users size={20} strokeWidth={1.5} />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">Today's Patients</span>
+              <div className="text-2xl font-black text-slate-800 mt-1">{activeTodayAppointments.length}</div>
+              <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 mt-0.5">
+                <TrendingUp size={12} />
+                <span>+8% from yesterday</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2: Daily Revenue */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-center justify-between hover:shadow transition-shadow">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-teal-50 text-teal-650 flex items-center justify-center shrink-0">
+              <DollarSign size={20} strokeWidth={1.5} />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">Daily Revenue</span>
+              <div className="text-2xl font-black text-slate-800 mt-1">₹45,680</div>
+              <div className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 mt-0.5">
+                <TrendingUp size={12} />
+                <span>+14.2% from average</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Pending Invoices */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-center justify-between hover:shadow transition-shadow">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-teal-50 text-teal-650 flex items-center justify-center shrink-0">
+              <FileText size={20} strokeWidth={1.5} />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">Pending Invoices</span>
+              <div className="text-2xl font-black text-slate-800 mt-1">5</div>
+              <div className="flex items-center gap-1 text-[10px] font-semibold text-slate-450 mt-0.5">
+                <Clock size={12} />
+                <span>Awaiting front desk collection</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: Low Stock Alerts */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex items-center justify-between hover:shadow transition-shadow">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl bg-teal-50 text-teal-650 flex items-center justify-center shrink-0">
+              <Package size={20} strokeWidth={1.5} />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">Low Stock Alerts</span>
+              <div className="text-2xl font-black text-slate-800 mt-1">{lowStockCount}</div>
+              <div className="flex items-center gap-1 text-[10px] font-semibold text-slate-450 mt-0.5">
+                <AlertTriangle size={12} className="text-amber-500" />
+                <span>Items need reordering</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* 3. Main Content Grid (Dual-Column) */}
+      <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-6 items-start w-full">
+        
+        {/* 4. Left Column: Today's Schedule Overview */}
+        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col justify-between min-h-[400px] border-box">
+          <div className="p-5">
+            <h3 className="text-sm font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
+              <Calendar size={18} strokeWidth={1.5} className="text-teal-605" />
+              <span>Today's Appointments</span>
+            </h3>
+
+            <div className="flex flex-col gap-3.5">
+              {activeTodayAppointments.slice(0, 4).map((appt) => (
+                <div
+                  key={appt.id}
+                  className="flex items-center justify-between p-3.5 border border-slate-100 rounded-xl hover:border-slate-200 hover:shadow-xs transition-all bg-slate-50/20"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 text-right font-mono text-xs font-bold text-slate-500 border-r border-slate-200 pr-3">
+                      {appt.appointmentTime}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-slate-800">{appt.patient?.name}</span>
+                      <span className="text-[10px] text-slate-450 mt-0.5">{appt.treatment}</span>
+                    </div>
+                  </div>
+
+                  <span className={`px-2 py-0.5 text-[9px] border rounded-full ${getStatusBadgeClass(appt.status)}`}>
+                    {appt.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* View Full Calendar Button */}
+          <div className="p-4 border-t border-slate-100 bg-slate-50/30 flex justify-center">
             <button
-              key={i}
-              onClick={action.action}
-              className="bg-white border border-slate-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md hover:border-slate-200 transition-all text-left cursor-pointer group"
+              onClick={() => dispatch(setActiveView('appointments'))}
+              className="text-xs font-bold text-teal-650 hover:text-teal-700 flex items-center gap-1 cursor-pointer"
             >
-              <div className="w-12 h-12 rounded-2xl bg-teal-50 group-hover:bg-teal-100 text-teal-600 transition-colors flex items-center justify-center shrink-0">
-                <ActionIcon size={22} strokeWidth={1.5} />
-              </div>
-              <div className="min-w-0">
-                <div className="text-sm font-bold text-slate-805">{action.label}</div>
-                <div className="text-xs text-slate-400 mt-1 truncate">{action.desc}</div>
-              </div>
+              <span>View Full Calendar</span>
+              <ChevronRight size={14} />
             </button>
-          )
-        })}
-      </div>
-
-      {/* 1. KPI STATS ROW */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        
-        {/* Card 1: Total Patients */}
-        <div className="bg-white border border-slate-100 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow transition-shadow">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-650 flex items-center justify-center shrink-0">
-              <Users size={22} strokeWidth={1.5} />
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-slate-400">Total Patients</div>
-              <div className="text-2xl font-bold text-slate-800 mt-1">{totalPatientsCount.toLocaleString()}</div>
-              <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 mt-0.5">
-                <TrendingUp size={12} />
-                <span>+12.5%</span>
-                <span className="text-slate-400 font-normal">vs last month</span>
-              </div>
-            </div>
           </div>
         </div>
 
-        {/* Card 2: Appointments Today */}
-        <div className="bg-white border border-slate-100 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow transition-shadow">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-              <Calendar size={22} strokeWidth={1.5} />
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-slate-400">Appointments Today</div>
-              <div className="text-2xl font-bold text-slate-800 mt-1">{apptsCountToday}</div>
-              <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 mt-0.5">
-                <TrendingUp size={12} />
-                <span>+8.3%</span>
-                <span className="text-slate-400 font-normal">vs yesterday</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* 5. Right Column: Operations & Alerts */}
+        <div className="flex flex-col gap-6">
+          
+          {/* Quick Actions Panel */}
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-100 pb-3 mb-4">
+              Quick Operations
+            </h3>
+            
+            <button
+              onClick={handleStartConsultation}
+              className="w-full mb-4 flex items-center justify-center gap-1.5 px-4 h-10 text-xs rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold transition-all shadow-sm cursor-pointer select-none"
+            >
+              <CheckCircle size={15} strokeWidth={2.5} />
+              <span>Start Consultation</span>
+            </button>
 
-        {/* Card 3: New Patients */}
-        <div className="bg-white border border-slate-100 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow transition-shadow">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
-              <Activity size={22} strokeWidth={1.5} />
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-slate-400">New Patients</div>
-              <div className="text-2xl font-bold text-slate-800 mt-1">{newPatientsCount}</div>
-              <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 mt-0.5">
-                <TrendingUp size={12} />
-                <span>+16.7%</span>
-                <span className="text-slate-400 font-normal">vs yesterday</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4: Today's Revenue */}
-        <div className="bg-white border border-slate-100 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow transition-shadow">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 font-bold text-lg">
-              ₹
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-slate-400">Today's Revenue</div>
-              <div className="text-2xl font-bold text-slate-800 mt-1">{revenueToday}</div>
-              <div className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 mt-0.5">
-                <TrendingUp size={12} />
-                <span>+14.2%</span>
-                <span className="text-slate-400 font-normal">vs yesterday</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* 2. DYNAMIC WIDGETS ROW: Today's Appointments, Patient Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Today's Appointments */}
-        <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm flex flex-col justify-between min-h-[420px]">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-slate-800">Today's Appointments</h3>
-              <button 
-                onClick={() => dispatch(setActiveView('appointments'))} 
-                className="text-xs font-semibold text-teal-650 hover:text-teal-700 cursor-pointer"
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => dispatch(setActiveView('patients'))}
+                className="p-4 bg-slate-50 hover:bg-teal-50/30 border border-slate-100 hover:border-teal-200 rounded-xl text-center flex flex-col items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 transition-transform group"
               >
-                View all
+                <UserPlus size={18} className="text-slate-500 group-hover:text-teal-600 transition-colors" />
+                <span className="text-[11px] font-bold text-slate-700 group-hover:text-teal-700">Register Patient</span>
+              </button>
+
+              <button
+                onClick={() => dispatch(setActiveView('finance'))}
+                className="p-4 bg-slate-50 hover:bg-teal-50/30 border border-slate-100 hover:border-teal-200 rounded-xl text-center flex flex-col items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 transition-transform group"
+              >
+                <FileText size={18} className="text-slate-500 group-hover:text-teal-600 transition-colors" />
+                <span className="text-[11px] font-bold text-slate-700 group-hover:text-teal-700">Generate Invoice</span>
+              </button>
+
+              <button
+                onClick={() => dispatch(setActiveView('inventory'))}
+                className="p-4 bg-slate-50 hover:bg-teal-50/30 border border-slate-100 hover:border-teal-200 rounded-xl text-center flex flex-col items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 transition-transform group"
+              >
+                <Plus size={18} className="text-slate-500 group-hover:text-teal-600 transition-colors" />
+                <span className="text-[11px] font-bold text-slate-700 group-hover:text-teal-700">Add Inventory</span>
+              </button>
+
+              <button
+                onClick={() => dispatch(setActiveView('report'))}
+                className="p-4 bg-slate-50 hover:bg-teal-50/30 border border-slate-100 hover:border-teal-200 rounded-xl text-center flex flex-col items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 transition-transform group"
+              >
+                <TrendingUp size={18} className="text-slate-500 group-hover:text-teal-600 transition-colors" />
+                <span className="text-[11px] font-bold text-slate-700 group-hover:text-teal-700">View Reports</span>
               </button>
             </div>
-            
-            <div className="flex flex-col gap-3">
-              {displayTodayAppts.map((appt, i) => {
-                const isSelected = selectedPatient && appt.patient?.id === selectedPatient.id
-                return (
-                  <div 
-                    key={appt.id || i}
-                    onClick={() => handleSelectPatient(appt.patient)}
-                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                      isSelected 
-                        ? 'bg-purple-50/40 border-purple-200 shadow-sm' 
-                        : 'bg-white border-slate-100 hover:border-slate-200'
-                    }`}
-                  >
-                    <div className="text-[10px] font-bold text-slate-400 shrink-0 w-14">
-                      {appt.appointmentTime || '10:00 AM'}
-                    </div>
-                    <div className="w-[30px] h-[30px] rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-605 shrink-0">
-                      {appt.patient?.name?.[0] || 'P'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-bold text-slate-800 truncate">{appt.patient?.name}</div>
-                      <div className="text-[10px] text-slate-450 truncate mt-0.5">{appt.treatment || 'Consultation'}</div>
-                    </div>
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md border shrink-0 ${
-                      appt.status === 'COMPLETED' 
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                        : appt.status === 'IN_PROGRESS'
-                          ? 'bg-purple-50 text-purple-700 border-purple-150'
-                          : 'bg-blue-50 text-blue-700 border-blue-100'
-                    }`}>
-                      {appt.status || 'UPCOMING'}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
           </div>
 
-          <button 
-            onClick={() => dispatch(setActiveView('appointments'))}
-            className="w-full mt-4 h-10 border border-dashed border-teal-200 text-teal-650 bg-teal-50/10 hover:bg-teal-50/30 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-          >
-            + New Appointment
-          </button>
-        </div>
+          {/* Inventory Attention Required widget */}
+          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col justify-between min-h-[220px]">
+            <div>
+              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-100 pb-3 mb-4 flex items-center gap-1.5">
+                <AlertCircle size={14} className="text-rose-600" />
+                <span>Inventory Attention Required</span>
+              </h3>
 
-        {/* Patient Overview */}
-        <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm flex flex-col justify-between min-h-[420px]">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-slate-800">Patient Overview</h3>
-              <button 
-                onClick={() => dispatch(setActiveView('patients'))} 
-                className="text-xs font-semibold text-teal-650 hover:text-teal-700 cursor-pointer"
-              >
-                View all
-              </button>
-            </div>
-
-            {selectedPatient ? (
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-teal-500/10 text-teal-700 flex items-center justify-center text-lg font-bold shrink-0">
-                    {selectedPatient.name?.[0] || 'P'}
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-slate-800">{selectedPatient.name}</h4>
-                    <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-2">
-                      <span>PIO: PT-2026-00{selectedPatient.id}</span>
-                      <span>•</span>
-                      <span>32 Years</span>
-                      <span>•</span>
-                      <span>{selectedPatient.gender || 'Female'}</span>
+              <div className="flex flex-col gap-3">
+                {inventoryAlertsList.length === 0 ? (
+                  <span className="text-xs text-slate-450 italic">All logged stocks are healthy.</span>
+                ) : (
+                  inventoryAlertsList.map(item => (
+                    <div key={item.id} className="flex justify-between items-center text-xs">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-slate-800">{item.name}</span>
+                        <span className="text-[10px] text-slate-400 mt-0.5 font-mono">{item.sku}</span>
+                      </div>
+                      
+                      <span className="font-bold text-rose-600 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded text-[10px] shrink-0">
+                        {item.currentStock === 0 ? 'Out of Stock' : `Low: ${item.currentStock} left`}
+                      </span>
                     </div>
-                  </div>
-                </div>
-
-                <div className="w-full h-px bg-slate-100" />
-
-                <div className="flex flex-col gap-2.5 text-xs text-slate-650">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Phone</span>
-                    <span className="font-bold text-slate-700">{selectedPatient.phone}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Last Visit</span>
-                    <span className="font-bold text-slate-700">
-                      {selectedPatient.createdAt ? selectedPatient.createdAt.split('T')[0] : '10 May 2026'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Blood Group</span>
-                    <span className="font-bold text-slate-700">B+</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Allergies</span>
-                    <span className="font-bold text-rose-600">Penicillin</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Conditions</span>
-                    <span className="font-bold text-slate-700">None</span>
-                  </div>
-                </div>
+                  ))
+                )}
               </div>
-            ) : (
-              <div className="text-center py-10 text-slate-400 text-xs">
-                No patient selected. Select an appointment to load details.
-              </div>
-            )}
+            </div>
+
+            {/* Manage Stock Link */}
+            <button
+              onClick={() => dispatch(setActiveView('inventory'))}
+              className="text-xs font-bold text-teal-650 hover:text-teal-700 flex items-center gap-1 cursor-pointer pt-3 border-t border-slate-100 mt-4 select-none w-full text-left"
+            >
+              <span>Manage Stock</span>
+              <ChevronRight size={14} />
+            </button>
           </div>
 
-          <button 
-            onClick={() => dispatch(setActiveView('patients'))}
-            className="w-full text-center text-xs font-bold text-teal-650 hover:text-teal-700 pt-3 border-t border-slate-100 cursor-pointer flex items-center justify-center gap-1.5"
-          >
-            <span>View Full Record</span>
-            <ChevronRight size={14} />
-          </button>
-        </div>
-      </div>
-
-      {/* 3. THIRD ROW: Recent Patients, Tasks & Alerts, Upcoming Appointments */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Recent Patients */}
-        <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm flex flex-col justify-between min-h-[320px]">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-slate-805">Recent Patients</h3>
-              <button 
-                onClick={() => dispatch(setActiveView('patients'))} 
-                className="text-xs font-semibold text-teal-650 hover:text-teal-700 cursor-pointer"
-              >
-                View all
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              {patients.slice(0, 3).map((pat, i) => (
-                <div key={pat.id || i} className="flex items-center justify-between p-2.5 border border-slate-50 rounded-xl hover:border-slate-150 transition-colors">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-[30px] h-[30px] rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 shrink-0">
-                      {pat.name[0]}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-xs font-bold text-slate-800 truncate">{pat.name}</div>
-                      <div className="text-[9px] text-slate-400 font-mono mt-0.5">PT-2026-00{pat.id}</div>
-                    </div>
-                  </div>
-                  <span className="text-[10px] text-slate-400">15 May 2026</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Tasks & Alerts */}
-        <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm flex flex-col justify-between min-h-[320px]">
-          <div>
-            <h3 className="text-sm font-bold text-slate-800 mb-4">Tasks & Alerts</h3>
-            
-            <div className="flex flex-col gap-3">
-              {/* Low stock alert */}
-              <div className="flex gap-2.5 text-xs p-2.5 bg-rose-50/30 border border-rose-100 rounded-xl">
-                <div className="w-7 h-7 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-                  <AlertTriangle size={14} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-rose-800 truncate">Low Stock Alert</div>
-                  <div className="text-[10px] text-rose-650 mt-0.5 leading-tight">
-                    {lowStockMedications.length > 0 
-                      ? `${lowStockMedications[0].name} and ${lowStockMedications.length - 1} other items are running low.`
-                      : 'Dental Composite (A2) is running low.'
-                    }
-                  </div>
-                </div>
-                <span className="text-[9px] text-slate-400 mt-0.5">10 min ago</span>
-              </div>
-
-              {/* Pending reports */}
-              <div className="flex gap-2.5 text-xs p-2.5 bg-amber-50/30 border border-amber-100 rounded-xl">
-                <div className="w-7 h-7 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                  <FileCheck2 size={14} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-amber-800 truncate">Pending Reports</div>
-                  <div className="text-[10px] text-amber-650 mt-0.5 leading-tight">
-                    3 lab reports are pending review.
-                  </div>
-                </div>
-                <span className="text-[9px] text-slate-400 mt-0.5">1 hr ago</span>
-              </div>
-
-              {/* Follow-ups */}
-              <div className="flex gap-2.5 text-xs p-2.5 bg-blue-50/30 border border-blue-100 rounded-xl">
-                <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                  <MailCheck size={14} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-blue-800 truncate">Follow-ups Due</div>
-                  <div className="text-[10px] text-blue-650 mt-0.5 leading-tight">
-                    5 patients have follow-ups due today.
-                  </div>
-                </div>
-                <span className="text-[9px] text-slate-400 mt-0.5">2 hr ago</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Upcoming Appointments Calendar slider */}
-        <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm flex flex-col justify-between min-h-[320px]">
-          <div>
-            <h3 className="text-sm font-bold text-slate-805 mb-3">Upcoming Appointments</h3>
-            
-            {/* Horizontal week list */}
-            <div className="flex justify-between border-b border-slate-100 pb-3 mb-3 text-center">
-              {[
-                { day: 'Sun', date: 11 },
-                { day: 'Mon', date: 12 },
-                { day: 'Tue', date: 13 },
-                { day: 'Wed', date: 14 },
-                { day: 'Thu', date: 15 },
-                { day: 'Fri', date: 16, active: true },
-                { day: 'Sat', date: 17 }
-              ].map((d, i) => (
-                <div key={i} className="flex flex-col items-center">
-                  <span className="text-[9px] font-bold text-slate-400">{d.day}</span>
-                  <div className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold mt-1.5 cursor-pointer transition-all ${
-                    d.active ? 'bg-blue-600 text-white shadow' : 'text-slate-700 hover:bg-slate-50'
-                  }`}>
-                    {d.date}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col gap-2.5">
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                <span>Friday, 16 May 2026</span>
-                <span className="text-blue-600">5 Appointments</span>
-              </div>
-
-              <div className="flex items-center justify-between p-2.5 bg-slate-50/50 rounded-xl text-xs">
-                <div>
-                  <span className="text-[10px] text-slate-400 font-bold">02:00 PM</span>
-                  <div className="font-bold text-slate-800 mt-0.5">Neha Sharma</div>
-                </div>
-                <span className="text-[10px] font-semibold text-slate-500">Braces Consultation</span>
-              </div>
-
-              <div className="flex items-center justify-between p-2.5 bg-slate-50/50 rounded-xl text-xs">
-                <div>
-                  <span className="text-[10px] text-slate-400 font-bold">03:00 PM</span>
-                  <div className="font-bold text-slate-800 mt-0.5">Aditya Verma</div>
-                </div>
-                <span className="text-[10px] font-semibold text-slate-500">Teeth Whitening</span>
-              </div>
-            </div>
-          </div>
         </div>
 
       </div>
-
-
 
     </div>
   )

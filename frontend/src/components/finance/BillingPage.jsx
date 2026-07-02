@@ -18,6 +18,7 @@ import { setActiveView } from '../../store/slices/appSlice'
 import { getAllInvoices, createInvoice } from '../../api/invoices'
 import { searchPatients } from '../../api/patients'
 import toast from 'react-hot-toast'
+import InvoiceGenerator from './InvoiceGenerator'
 
 export default function BillingPage() {
   const dispatch = useDispatch()
@@ -30,6 +31,7 @@ export default function BillingPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState('Invoices') // Invoices, Payments, Transactions
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showGenerator, setShowGenerator] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 7
 
@@ -109,6 +111,18 @@ export default function BillingPage() {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
   const currentItems = filteredInvoices.slice(indexOfFirstItem, indexOfLastItem)
 
+  if (showGenerator) {
+    return (
+      <InvoiceGenerator
+        onCancel={() => {
+          setShowGenerator(false)
+          loadData()
+        }}
+        patients={patients}
+      />
+    )
+  }
+
   return (
     <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 bg-[#F8FAFC]">
       
@@ -123,7 +137,7 @@ export default function BillingPage() {
         </button>
 
         <button 
-          onClick={() => setShowAddModal(true)}
+          onClick={() => setShowGenerator(true)}
           className="flex items-center gap-1 px-3.5 h-9 text-xs rounded-xl bg-teal-650 hover:bg-teal-700 text-white font-bold transition-all shadow-sm cursor-pointer"
         >
           <Plus size={14} strokeWidth={2.5} />

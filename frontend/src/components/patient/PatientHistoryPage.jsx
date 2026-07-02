@@ -17,7 +17,8 @@ import {
   Mail,
   ArrowLeft,
   Droplet,
-  Loader2
+  Loader2,
+  ClipboardList
 } from 'lucide-react'
 import { searchPatients, getPatientById } from '../../api/patients'
 import PatientRegistrationModal from './PatientRegistrationModal'
@@ -26,6 +27,7 @@ import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { useDispatch } from 'react-redux'
 import { setActiveView } from '../../store/slices/appSlice'
+import { setSelectedPatient } from '../../store/slices/patientSlice'
 
 export default function PatientHistoryPage({ defaultPatientId }) {
   const dispatch = useDispatch()
@@ -341,6 +343,18 @@ export default function PatientHistoryPage({ defaultPatientId }) {
                     <span className="font-bold text-slate-700 text-right leading-tight max-w-[160px]">{selectedPat.address || '123 Main St, Sankarankovil, TN'}</span>
                   </div>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    dispatch(setSelectedPatient(selectedPat))
+                    dispatch(setActiveView('consultation'))
+                  }}
+                  className="w-full mt-5 bg-teal-605 hover:bg-teal-750 text-white font-semibold py-2 px-4 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-sm transition-all text-xs"
+                >
+                  <Activity size={16} strokeWidth={1.5} />
+                  <span>Start Active Consultation</span>
+                </button>
               </div>
 
 
